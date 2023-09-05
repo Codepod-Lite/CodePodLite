@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { Handle, NodeProps, Position } from "reactflow";
 
 import {
@@ -13,8 +13,6 @@ import "remirror/styles/all.css";
 
 import Box from "@mui/material/Box";
 import { styled } from "@mui/material";
-
-import { ResizableBox } from "react-resizable";
 
 const MyStyledWrapper = styled("div")(
   () => `
@@ -56,7 +54,6 @@ const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: strin
     <Box
       className="remirror-theme"
       sx={{
-        userSelect: "text",
         cursor: "auto",
         // Display different markers for different levels in nested ordered lists.
         ol: {
@@ -97,18 +94,21 @@ interface Props {
 }
 
 export const RichNode = memo<Props>(function ({ data, id, isConnectable, selected, xPos, yPos }) {
-  
+  const [borderColor, setBorderColor] = useState("#d6dee6");
   return (
     <Box
-    sx={{
-      border: "solid 1px #d6dee6",
-      borderWidth: "2px",
-      borderRadius: "4px",
-      width: "200px",
-      height: "150px",
-      backgroundColor: "white",
-      borderColor: "#5e92f3",
-    }}>
+      onFocus = {() => {setBorderColor("#003c8f")}}
+      onBlur = {() => setBorderColor("#d6dee6")}
+      sx={{
+        border: "solid 1px #d6dee6",
+        borderWidth: "2px",
+        borderRadius: "4px",
+        width: "200px",
+        height: "120px",
+        backgroundColor: "white",
+        borderColor: {borderColor},
+      }}
+    >
       <MyEditor id={id} />
     </Box>
   );
