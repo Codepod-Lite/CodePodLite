@@ -12,7 +12,22 @@ import { Remirror, useRemirror, ThemeProvider, EditorComponent } from "@remirror
 import "remirror/styles/all.css";
 
 import Box from "@mui/material/Box";
+import { styled } from "@mui/material";
+
 import { ResizableBox } from "react-resizable";
+
+const MyStyledWrapper = styled("div")(
+  () => `
+  .remirror-editor-wrapper {
+    padding: 0;
+  }
+
+  /* leave some space for the block handle */
+  .remirror-editor-wrapper .ProseMirror {
+    padding-left: 24px;
+  }
+`
+);
 
 const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: string; id: string }) => {
   const { manager, state } = useRemirror({
@@ -38,13 +53,32 @@ const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: strin
     stringHandler: "markdown",
   });
   return (
-    <ResizableBox width={200} height={150}>
+    <Box
+      className="remirror-theme"
+      sx={{
+        userSelect: "text",
+        cursor: "auto",
+        // Display different markers for different levels in nested ordered lists.
+        ol: {
+          listStylType: "decimal",
+        },
+        "ol li ol": {
+          listStyleType: "lower-alpha",
+        },
+        "ol li ol li ol": {
+          listStyleType: "lower-roman",
+        },
+      }}
+      overflow="auto"
+    >
       <ThemeProvider>
-        <Remirror manager={manager} initialContent={state} editable={true}>
-          <EditorComponent />
-        </Remirror>
+        <MyStyledWrapper>
+          <Remirror manager={manager} initialContent={state} editable={true}>
+            <EditorComponent />
+          </Remirror>
+        </MyStyledWrapper>
       </ThemeProvider>
-    </ResizableBox>
+    </Box>
   );
 };
 
@@ -63,12 +97,20 @@ interface Props {
 }
 
 export const RichNode = memo<Props>(function ({ data, id, isConnectable, selected, xPos, yPos }) {
+  
   return (
-    <>
-      <Box>
-        <MyEditor id={id} />
-      </Box>
-    </>
+    <Box
+    sx={{
+      border: "solid 1px #d6dee6",
+      borderWidth: "2px",
+      borderRadius: "4px",
+      width: "200px",
+      height: "150px",
+      backgroundColor: "white",
+      borderColor: "#5e92f3",
+    }}>
+      <MyEditor id={id} />
+    </Box>
   );
 });
 
