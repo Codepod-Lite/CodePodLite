@@ -145,7 +145,6 @@ interface Props {
 }
 
 export const RichNode = memo<Props>(function ({ data, id, isConnectable, selected, xPos, yPos }) {
-  const [borderColor, setBorderColor] = useState("#d6dee6");
   const inputRef = useRef<HTMLInputElement>(null);
   const Wrap = (child) => (
     <Box
@@ -196,6 +195,7 @@ export const RichNode = memo<Props>(function ({ data, id, isConnectable, selecte
       {" "}
       {Wrap(
         <Box
+          onClick = {(e) => console.log(e)}
           sx={{
             border: "solid 1px #d6dee6",
             borderWidth: "2px",
