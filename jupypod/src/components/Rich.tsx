@@ -103,7 +103,7 @@ const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: strin
   });
   return (
     <Box
-      className="remirror-theme"
+      className="remirror-theme nopan"
       sx={{
         cursor: "auto",
         // Display different markers for different levels in nested ordered lists.
@@ -195,7 +195,6 @@ export const RichNode = memo<Props>(function ({ data, id, isConnectable, selecte
       {" "}
       {Wrap(
         <Box
-          onClick = {(e) => console.log(e)}
           sx={{
             border: "solid 1px #d6dee6",
             borderWidth: "2px",

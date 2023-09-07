@@ -64,6 +64,7 @@ export default function Flow() {
       fitViewOptions={fitViewOptions}
       defaultEdgeOptions={defaultEdgeOptions}
       nodeTypes={nodeTypes}
+      nodesDraggable={false}
     >
     <Background />
     <Controls />
