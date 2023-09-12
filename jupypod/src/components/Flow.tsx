@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from "react";
 import ReactFlow, {
   addEdge,
   FitViewOptions,
@@ -12,9 +12,12 @@ import ReactFlow, {
   MiniMap,
   Controls,
   Background
-} from 'reactflow';
+} from "reactflow";
 
 import RichNode from './Rich';
+import { CanvasContextMenu } from "./CanvasContextMenu";
+
+import Box from "@mui/material/Box"
 
 const initialNodes: Node[] = [
   { id: '1', type: "RICH", data: {}, position: { x: -50, y: 250 } },
@@ -54,21 +57,27 @@ export default function Flow() {
   );
 
   return (
-    <ReactFlow
-      nodes={nodes}
-      edges={edges}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
-      onConnect={onConnect}
-      fitView
-      fitViewOptions={fitViewOptions}
-      defaultEdgeOptions={defaultEdgeOptions}
-      nodeTypes={nodeTypes}
-      nodesDraggable={false}
-    >
-    <Background />
-    <Controls />
-    <MiniMap />
-    </ ReactFlow>
+    <Box className="react-flow-container">
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        fitView
+        fitViewOptions={fitViewOptions}
+        defaultEdgeOptions={defaultEdgeOptions}
+        nodeTypes={nodeTypes}
+        nodesDraggable={false}
+      >
+      <Background />
+      <Controls />
+      <MiniMap />
+      </ ReactFlow>
+      <CanvasContextMenu 
+        x={250}
+        y={250}
+      />
+    </Box>
   );
 }
