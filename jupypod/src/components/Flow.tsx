@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from "react";
 import ReactFlow, {
   addEdge,
   FitViewOptions,
@@ -11,18 +11,18 @@ import ReactFlow, {
   OnConnect,
   MiniMap,
   Controls,
-  Background
-} from 'reactflow';
+  Background,
+} from "reactflow";
 
-import RichNode from './Rich';
+import RichNode from "./Rich";
 
 const initialNodes: Node[] = [
-  { id: '1', type: "RICH", data: {}, position: { x: -50, y: 250 } },
-  { id: '2', type: "RICH", data: {}, position: { x: -50, y: 100 } },
-  { id: '3', type: "RICH", data: {}, position: { x: 250, y: 100 }},
+  { id: "1", type: "RICH", data: {}, position: { x: -50, y: 250 } },
+  { id: "2", type: "RICH", data: {}, position: { x: -50, y: 100 } },
+  { id: "3", type: "RICH", data: {}, position: { x: 250, y: 100 } },
 ];
 
-const initialEdges: Edge[] = [{ id: 'e1-2', source: '1', target: '2' }];
+const initialEdges: Edge[] = [{ id: "e1-2", source: "1", target: "2" }];
 
 const fitViewOptions: FitViewOptions = {
   // padding: 0.2,
@@ -66,9 +66,9 @@ export default function Flow() {
       nodeTypes={nodeTypes}
       nodesDraggable={false}
     >
-    <Background />
-    <Controls />
-    <MiniMap />
-    </ ReactFlow>
+      <Background />
+      <Controls />
+      <MiniMap />
+    </ReactFlow>
   );
 }

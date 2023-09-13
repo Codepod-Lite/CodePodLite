@@ -1,4 +1,4 @@
-import { memo, useState, useRef } from "react";
+import { memo, useState, useRef, ReactNode } from "react";
 import { Handle, NodeProps, Position } from "reactflow";
 
 import {
@@ -29,13 +29,25 @@ import {
   StrikeExtension,
   UnderlineExtension,
 } from "remirror/extensions";
-import { Remirror, useRemirror, ThemeProvider, EditorComponent, ReactComponentExtension } from "@remirror/react";
+import {
+  Remirror,
+  useRemirror,
+  ThemeProvider,
+  EditorComponent,
+  ReactComponentExtension,
+} from "@remirror/react";
 import "remirror/styles/all.css";
 
 import Box from "@mui/material/Box";
 import { styled } from "@mui/material";
 import InputBase from "@mui/material/InputBase";
 import { ResizableBox } from "react-resizable";
+import { JSX } from "react/jsx-runtime";
+
+import {
+  MathInlineExtension,
+  MathBlockExtension,
+} from "../extensions/mathExtension";
 
 const MyStyledWrapper = styled("div")(
   () => `
@@ -50,7 +62,13 @@ const MyStyledWrapper = styled("div")(
 `
 );
 
-const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: string; id: string }) => {
+const MyEditor = ({
+  placeholder = "Start typing...",
+  id,
+}: {
+  placeholder?: string;
+  id: string;
+}) => {
   const { manager, state } = useRemirror({
     extensions: () => [
       new PlaceholderExtension({ placeholder }),
@@ -87,6 +105,9 @@ const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: strin
       //   autoLinkAllowedTLDs: ["dev", ...TOP_50_TLDS],
       // }),
       new UnderlineExtension(),
+      // Math Parse
+      new MathInlineExtension(),
+      new MathBlockExtension(),
     ],
     // Set the initial content.
     content: "",
@@ -144,9 +165,26 @@ interface Props {
   yPos: number;
 }
 
-export const RichNode = memo<Props>(function ({ data, id, isConnectable, selected, xPos, yPos }) {
+export const RichNode = memo<Props>(function ({
+  data,
+  id,
+  isConnectable,
+  selected,
+  xPos,
+  yPos,
+}) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const Wrap = (child) => (
+
+  const Wrap = (
+    child:
+      | string
+      | number
+      | boolean
+      | JSX.Element
+      | Iterable<ReactNode>
+      | null
+      | undefined
+  ) => (
     <Box
       sx={{
         "& .react-resizable-handle": {
@@ -159,7 +197,7 @@ export const RichNode = memo<Props>(function ({ data, id, isConnectable, selecte
         height={100}
         width={250}
         axis={"x"}
-        minConstraints={[200, 200]}
+        minConstraints={[100, 200]}
       >
         <Box
           sx={{
@@ -175,48 +213,46 @@ export const RichNode = memo<Props>(function ({ data, id, isConnectable, selecte
   );
   return (
     <>
-    <Box
-      // onMouseEnter={() => {
-      //   setShowToolbar(true);
-      // }}
-      // onMouseLeave={() => {
-      //   setShowToolbar(false);
-      //   // hide drag handle
-      //   const elems = document.getElementsByClassName("global-drag-handle");
-      //   Array.from(elems).forEach((elem) => {
-      //     (elem as HTMLElement).style.display = "none";
-      //   });
-      // }}
-      sx={{
-        cursor: "auto",
-        fontSize: 16,
-      }}
-    >
-      {" "}
-      {Wrap(
-        <Box
-          sx={{
-            border: "solid 1px #d6dee6",
-            borderWidth: "2px",
-            borderRadius: "4px",
-            width: "100%",
-            height: "100%",
-            backgroundColor: "white",
-            borderColor: selected
-                ? "#5e92f3"
-                : "#d6dee6",
-          }}
-        >
+      <Box
+        // onMouseEnter={() => {
+        //   setShowToolbar(true);
+        // }}
+        // onMouseLeave={() => {
+        //   setShowToolbar(false);
+        //   // hide drag handle
+        //   const elems = document.getElementsByClassName("global-drag-handle");
+        //   Array.from(elems).forEach((elem) => {
+        //     (elem as HTMLElement).style.display = "none";
+        //   });
+        // }}
+        sx={{
+          cursor: "auto",
+          fontSize: 16,
+        }}
+      >
+        {" "}
+        {Wrap(
           <Box
+            sx={{
+              border: "solid 1px #d6dee6",
+              borderWidth: "2px",
+              borderRadius: "4px",
+              width: "100%",
+              height: "100%",
+              backgroundColor: "white",
+              borderColor: selected ? "#5e92f3" : "#d6dee6",
+            }}
+          >
+            <Box
             // sx={{
             //   opacity: showToolbar ? 1 : 0,
             // }}
-          >
-            {/* <Handles pod={pod} xPos={xPos} yPos={yPos} /> */}
-          </Box>
+            >
+              {/* <Handles pod={pod} xPos={xPos} yPos={yPos} /> */}
+            </Box>
 
-          <Box>
-            {/* {devMode && (
+            <Box>
+              {/* {devMode && (
               <Box
                 sx={{
                   position: "absolute",
@@ -231,63 +267,63 @@ export const RichNode = memo<Props>(function ({ data, id, isConnectable, selecte
                 {pod.width}, h: {pod.height})
               </Box>
             )} */}
-            <Box
-              sx={{
-                position: "absolute",
-                top: "-24px",
-                width: "50%",
-              }}
-            >
-              <InputBase
-                inputRef={inputRef}
-                className="nodrag"
-                defaultValue={data.name || ""}
-                // disabled={isGuest}
-                // onBlur={(e) => {
-                //   const name = e.target.value;
-                //   if (name === data.name) return;
-                //   const node = nodesMap.get(id);
-                //   if (node) {
-                //     nodesMap.set(id, {
-                //       ...node,
-                //       data: { ...node.data, name },
-                //     });
-                //   }
-                // }}
-                inputProps={{
-                  style: {
-                    padding: "0px",
-                    textOverflow: "ellipsis",
-                  },
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: "-24px",
+                  width: "50%",
                 }}
-              ></InputBase>
+              >
+                <InputBase
+                  inputRef={inputRef}
+                  className="nodrag"
+                  defaultValue={data.name || ""}
+                  // disabled={isGuest}
+                  // onBlur={(e) => {
+                  //   const name = e.target.value;
+                  //   if (name === data.name) return;
+                  //   const node = nodesMap.get(id);
+                  //   if (node) {
+                  //     nodesMap.set(id, {
+                  //       ...node,
+                  //       data: { ...node.data, name },
+                  //     });
+                  //   }
+                  // }}
+                  inputProps={{
+                    style: {
+                      padding: "0px",
+                      textOverflow: "ellipsis",
+                    },
+                  }}
+                ></InputBase>
+              </Box>
+              <Box
+                sx={{
+                  // opacity: showToolbar ? 1 : 0,
+                  display: "flex",
+                  marginLeft: "10px",
+                  borderRadius: "4px",
+                  position: "absolute",
+                  border: "solid 1px #d6dee6",
+                  right: "25px",
+                  top: "-15px",
+                  background: "white",
+                  zIndex: 10,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                {/* <MyFloatingToolbar id={id} /> */}
+              </Box>
             </Box>
-            <Box
-              sx={{
-                // opacity: showToolbar ? 1 : 0,
-                display: "flex",
-                marginLeft: "10px",
-                borderRadius: "4px",
-                position: "absolute",
-                border: "solid 1px #d6dee6",
-                right: "25px",
-                top: "-15px",
-                background: "white",
-                zIndex: 10,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              {/* <MyFloatingToolbar id={id} /> */}
+            <Box>
+              <MyEditor id={id} />
             </Box>
           </Box>
-          <Box>
-            <MyEditor id={id} />
-          </Box>
-        </Box>
-      )}
-    </Box>
-  </>
+        )}
+      </Box>
+    </>
   );
 });
 
