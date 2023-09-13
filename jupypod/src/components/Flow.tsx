@@ -11,21 +11,21 @@ import ReactFlow, {
   OnConnect,
   MiniMap,
   Controls,
-  Background
+  Background,
 } from "reactflow";
 
-import RichNode from './Rich';
+import RichNode from "./Rich";
 import { CanvasContextMenu } from "./CanvasContextMenu";
 
-import Box from "@mui/material/Box"
+import Box from "@mui/material/Box";
 
 const initialNodes: Node[] = [
-  { id: '1', type: "RICH", data: {}, position: { x: -50, y: 250 } },
-  { id: '2', type: "RICH", data: {}, position: { x: -50, y: 100 } },
-  { id: '3', type: "RICH", data: {}, position: { x: 250, y: 100 }},
+  { id: "1", type: "RICH", data: {}, position: { x: -50, y: 250 } },
+  { id: "2", type: "RICH", data: {}, position: { x: -50, y: 100 } },
+  { id: "3", type: "RICH", data: {}, position: { x: 250, y: 100 } },
 ];
 
-const initialEdges: Edge[] = [{ id: 'e1-2', source: '1', target: '2' }];
+const initialEdges: Edge[] = [{ id: "e1-2", source: "1", target: "2" }];
 
 const fitViewOptions: FitViewOptions = {
   // padding: 0.2,
@@ -51,10 +51,7 @@ export default function Flow() {
     (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
     [setEdges]
   );
-  const onConnect: OnConnect = useCallback(
-    (connection) => setEdges((eds) => addEdge(connection, eds)),
-    [setEdges]
-  );
+  const onConnect: OnConnect = useCallback((connection) => setEdges((eds) => addEdge(connection, eds)), [setEdges]);
 
   return (
     <Box className="react-flow-container">
@@ -70,14 +67,11 @@ export default function Flow() {
         nodeTypes={nodeTypes}
         nodesDraggable={false}
       >
-      <Background />
-      <Controls />
-      <MiniMap />
-      </ ReactFlow>
-      <CanvasContextMenu 
-        x={250}
-        y={250}
-      />
+        <Background />
+        <Controls />
+        <MiniMap />
+      </ReactFlow>
+      <CanvasContextMenu x={250} y={250} />
     </Box>
   );
 }
