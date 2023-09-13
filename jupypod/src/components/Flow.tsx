@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import ReactFlow, {
   addEdge,
   FitViewOptions,
@@ -42,6 +42,24 @@ const nodeTypes = {
 export default function Flow() {
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
+  const [showContextMenu, setShowContextMenu] = useState(false);
+  const [points, setPoints] = useState({ x: 0, y: 0 });
+
+  const onPaneContextMenu = (event) => {
+    event.preventDefault();
+    setShowContextMenu(true);
+    setPoints({ x: event.pageX, y: event.pageY });
+  };
+
+  useEffect(() => {
+    const handleClick = (event) => {
+      setShowContextMenu(false);
+    };
+    document.addEventListener("click", handleClick);
+    return () => {
+      document.removeEventListener("click", handleClick);
+    };
+  }, [setShowContextMenu]);
 
   const onNodesChange: OnNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -66,12 +84,13 @@ export default function Flow() {
         defaultEdgeOptions={defaultEdgeOptions}
         nodeTypes={nodeTypes}
         nodesDraggable={false}
+        onPaneContextMenu={onPaneContextMenu}
       >
         <Background />
         <Controls />
         <MiniMap />
       </ReactFlow>
-      <CanvasContextMenu x={250} y={250} />
+      {showContextMenu && <CanvasContextMenu x={points.x} y={points.y} />}
     </Box>
   );
 }
