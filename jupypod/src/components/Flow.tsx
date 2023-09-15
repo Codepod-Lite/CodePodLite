@@ -1,4 +1,6 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useContext } from "react";
+import { useBoundStore } from "../lib/store/index.tsx"
+
 import ReactFlow, {
   addEdge,
   FitViewOptions,
@@ -19,12 +21,6 @@ import { CanvasContextMenu } from "./CanvasContextMenu";
 
 import Box from "@mui/material/Box";
 
-const initialNodes: Node[] = [
-  { id: "1", type: "RICH", data: {}, position: { x: -50, y: 250 } },
-  { id: "2", type: "RICH", data: {}, position: { x: -50, y: 100 } },
-  { id: "3", type: "RICH", data: {}, position: { x: 250, y: 100 } },
-];
-
 const initialEdges: Edge[] = [{ id: "e1-2", source: "1", target: "2" }];
 
 const fitViewOptions: FitViewOptions = {
@@ -40,7 +36,8 @@ const nodeTypes = {
 };
 
 export default function Flow() {
-  const [nodes, setNodes] = useState<Node[]>(initialNodes);
+
+  const nodes = useBoundStore((state) => state.nodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [points, setPoints] = useState({ x: 0, y: 0 });
@@ -61,10 +58,10 @@ export default function Flow() {
     };
   }, [setShowContextMenu]);
 
-  const onNodesChange: OnNodesChange = useCallback(
-    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    [setNodes]
-  );
+  // const onNodesChange: OnNodesChange = useCallback(
+  //   (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
+  //   [setNodes]
+  // );
   const onEdgesChange: OnEdgesChange = useCallback(
     (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
     [setEdges]
@@ -76,7 +73,7 @@ export default function Flow() {
       <ReactFlow
         nodes={nodes}
         edges={edges}
-        onNodesChange={onNodesChange}
+        // onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         fitView
@@ -90,7 +87,13 @@ export default function Flow() {
         <Controls />
         <MiniMap />
       </ReactFlow>
-      {showContextMenu && <CanvasContextMenu x={points.x} y={points.y} />}
+      {showContextMenu && (
+        <CanvasContextMenu
+          x={points.x}
+          y={points.y}
+          // addRich={() => addNode("RICH", project({ x: client.x, y: client.y }), parentNode)}
+        />
+      )}
     </Box>
   );
 }
