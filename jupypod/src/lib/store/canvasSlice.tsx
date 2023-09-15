@@ -30,8 +30,6 @@ export const newNodeShapeConfig = {
   height: 100,
 };
 
-const nodes = [];
-
 function createNewNode(type: "SCOPE" | "CODE" | "RICH", position): Node {
   const id = myNanoId();
   const newNode = {
