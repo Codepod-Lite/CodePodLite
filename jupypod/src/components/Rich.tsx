@@ -35,6 +35,9 @@ import "remirror/styles/all.css";
 import Box from "@mui/material/Box";
 import { styled } from "@mui/material";
 import InputBase from "@mui/material/InputBase";
+import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
+import Tooltip from "@mui/material/Tooltip";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { ResizableBox } from "react-resizable";
 
 import "./components.css";
@@ -131,6 +134,37 @@ const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: strin
     </Box>
   );
 };
+
+function MyFloatingToolbar({ id }: { id: string }) {
+  return (
+    <>
+      <Box
+        className="custom-drag-handle"
+        sx={{
+          cursor: "grab",
+          padding: "8px",
+          display: "inline-flex",
+        }}
+      >
+        <DragIndicatorIcon fontSize="inherit" />
+      </Box>
+        <Tooltip title="Delete">
+          <DeleteIcon fontSize="small"/>
+        </Tooltip>
+      
+      <Box
+        className="custom-drag-handle"
+        sx={{
+          cursor: "grab",
+          padding: "8px",
+          display: "inline-flex",
+        }}
+      >
+        <DragIndicatorIcon fontSize="inherit" />
+      </Box>
+    </>
+  );
+}
 
 /**
  * The React Flow node.
@@ -278,7 +312,7 @@ export const RichNode = memo<Props>(function ({ data, id, isConnectable, selecte
                   alignItems: "center",
                 }}
               >
-                {/* <MyFloatingToolbar id={id} /> */}
+                <MyFloatingToolbar id={id} />
               </Box>
             </Box>
             <Box>
