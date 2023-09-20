@@ -68,7 +68,7 @@ function createNewNode(type: "SCOPE" | "CODE" | "RICH", position): Node {
       parent: "ROOT",
       level: 0,
     },
-    // dragHandle: ".custom-drag-handle",
+    dragHandle: ".custom-drag-handle",
   };
   return newNode;
 }
@@ -82,20 +82,29 @@ export interface CanvasSlice {
     position: XYPosition
     // parent: string
   ) => void;
+
+  onNodesChange: OnNodesChange;
 }
 
 export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (set, get) => ({
   nodes: [
-    { id: "1", type: "RICH", data: {}, position: { x: -50, y: 250 } },
-    { id: "2", type: "RICH", data: {}, position: { x: -50, y: 100 } },
-    { id: "3", type: "RICH", data: {}, position: { x: 250, y: 100 } },
+    { id: "1", type: "RICH", data: {}, position: { x: -50, y: 250 }, dragHandle: ".custom-drag-handle" },
+    { id: "2", type: "RICH", data: {}, position: { x: -50, y: 100 }, dragHandle: ".custom-drag-handle" },
+    { id: "3", type: "RICH", data: {}, position: { x: 250, y: 100 }, dragHandle: ".custom-drag-handle" },
   ],
   edges: [],
 
   addNode: (type, position, parent = "ROOT") => {
     const node = createNewNode(type, position);
     set((state) => ({
-      nodes: [...state.nodes, { id: node.id, type: "RICH", data: node.data, position: node.position }],
+      nodes: [...state.nodes, { id: node.id, type: "RICH", data: node.data, position: node.position, dragHandle: node.dragHandle }],
     }));
   },
+
+  onNodesChange: (changes: NodeChange[]) => {
+    const newNodes = applyNodeChanges(changes, get().nodes);
+    set(() => ({
+      nodes: newNodes,
+    }))
+  }
 });

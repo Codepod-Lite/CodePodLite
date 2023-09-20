@@ -108,7 +108,7 @@ const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: strin
   });
   return (
     <Box
-      className="remirror-theme nopan"
+      className="remirror-theme"
       sx={{
         cursor: "auto",
         // Display different markers for different levels in nested ordered lists.
@@ -138,30 +138,9 @@ const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: strin
 function MyFloatingToolbar({ id }: { id: string }) {
   return (
     <>
-      <Box
-        className="custom-drag-handle"
-        sx={{
-          cursor: "grab",
-          padding: "8px",
-          display: "inline-flex",
-        }}
-      >
-        <DragIndicatorIcon fontSize="inherit" />
-      </Box>
-        <Tooltip title="Delete">
-          <DeleteIcon fontSize="small"/>
-        </Tooltip>
-      
-      <Box
-        className="custom-drag-handle"
-        sx={{
-          cursor: "grab",
-          padding: "8px",
-          display: "inline-flex",
-        }}
-      >
-        <DragIndicatorIcon fontSize="inherit" />
-      </Box>
+      <Tooltip title="Delete">
+        <DeleteIcon fontSize="small" />
+      </Tooltip>
     </>
   );
 }
@@ -182,6 +161,7 @@ interface Props {
 
 export const RichNode = memo<Props>(function ({ data, id, isConnectable, selected, xPos, yPos }) {
   const inputRef = useRef<HTMLInputElement>(null);
+
   const Wrap = (child) => (
     <Box
       sx={{
@@ -227,6 +207,7 @@ export const RichNode = memo<Props>(function ({ data, id, isConnectable, selecte
           cursor: "auto",
           fontSize: 16,
         }}
+        className="custom-drag-handle"
       >
         {" "}
         {Wrap(
@@ -304,8 +285,8 @@ export const RichNode = memo<Props>(function ({ data, id, isConnectable, selecte
                   borderRadius: "4px",
                   position: "absolute",
                   border: "solid 1px #d6dee6",
-                  right: "25px",
-                  top: "-15px",
+                  right: "-2px",
+                  top: "2px",
                   background: "white",
                   zIndex: 10,
                   justifyContent: "center",

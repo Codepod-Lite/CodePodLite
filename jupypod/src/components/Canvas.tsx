@@ -16,6 +16,7 @@ import ReactFlow, {
   Background,
   useReactFlow,
   ReactFlowProvider,
+  useNodesState
 } from "reactflow";
 
 import RichNode from "./Rich.tsx";
@@ -23,7 +24,6 @@ import { CanvasContextMenu } from "./CanvasContextMenu.tsx";
 
 import Box from "@mui/material/Box";
 
-const initialEdges: Edge[] = [{ id: "e1-2", source: "1", target: "2" }];
 
 const fitViewOptions: FitViewOptions = {
   // padding: 0.2,
@@ -43,8 +43,8 @@ function Flow() {
 
   const nodes = useBoundStore((state) => state.nodes);
   const addNode = useBoundStore((state) => state.addNode);
+  const onNodesChange = useBoundStore((state) => state.onNodesChange);
 
-  const [edges, setEdges] = useState<Edge[]>(initialEdges);
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [points, setPoints] = useState({ x: 0, y: 0 });
   const [client, setClient] = useState({ x: 0, y: 0 });
@@ -82,25 +82,17 @@ function Flow() {
   //   (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
   //   [setNodes]
   // );
-  const onEdgesChange: OnEdgesChange = useCallback(
-    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    [setEdges]
-  );
-  const onConnect: OnConnect = useCallback((connection) => setEdges((eds) => addEdge(connection, eds)), [setEdges]);
 
   return (
     <Box className="react-flow-container" ref={reactFlowWrapper}>
       <ReactFlow
         nodes={nodes}
-        edges={edges}
-        // onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
+        onNodesChange={onNodesChange}
         fitView
         fitViewOptions={fitViewOptions}
         defaultEdgeOptions={defaultEdgeOptions}
         nodeTypes={nodeTypes}
-        nodesDraggable={false}
+        nodesDraggable={true}
         onPaneContextMenu={onPaneContextMenu}
       >
         <Background />
