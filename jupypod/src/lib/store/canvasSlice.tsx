@@ -84,6 +84,9 @@ export interface CanvasSlice {
   ) => void;
 
   onNodesChange: OnNodesChange;
+
+  focusedEditor: string | undefined;
+  setFocusedEditor: (id?: string) => void;
 }
 
 export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (set, get) => ({
@@ -96,8 +99,11 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
 
   addNode: (type, position, parent = "ROOT") => {
     const node = createNewNode(type, position);
-    set((state) => ({
-      nodes: [...state.nodes, { id: node.id, type: "RICH", data: node.data, position: node.position, dragHandle: node.dragHandle }],
+    set((state: MyState) => ({
+      nodes: [
+        ...state.nodes,
+        { id: node.id, type: "RICH", data: node.data, position: node.position, dragHandle: node.dragHandle },
+      ],
     }));
   },
 
@@ -105,6 +111,13 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
     const newNodes = applyNodeChanges(changes, get().nodes);
     set(() => ({
       nodes: newNodes,
-    }))
-  }
+    }));
+  },
+
+  focusedEditor: undefined,
+  setFocusedEditor: (id?: string) => {
+    set(() => ({
+      focusedEditor: id,
+    }));
+  },
 });

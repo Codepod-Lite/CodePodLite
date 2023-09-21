@@ -1,5 +1,6 @@
-import { memo, useState, useRef } from "react";
+import { memo, useState, useRef, useEffect } from "react";
 import { Handle, NodeProps, Position } from "reactflow";
+import { useBoundStore } from "../lib/store/index.tsx";
 
 import {
   BoldExtension,
@@ -56,6 +57,9 @@ const MyStyledWrapper = styled("div")(
 );
 
 const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: string; id: string }) => {
+  const focusedEditor = useBoundStore((state) => state.focusedEditor);
+  const setFocusedEditor = useBoundStore((state) => state.setFocusedEditor);
+
   const { manager, state } = useRemirror({
     extensions: () => [
       new PlaceholderExtension({ placeholder }),
@@ -123,6 +127,12 @@ const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: strin
         },
       }}
       overflow="auto"
+      onFocus={() => {
+        setFocusedEditor(id);
+      }}
+      onBlur={() => {
+        setFocusedEditor(undefined);
+      }}
     >
       <ThemeProvider>
         <MyStyledWrapper>
@@ -162,6 +172,10 @@ interface Props {
 export const RichNode = memo<Props>(function ({ data, id, isConnectable, selected, xPos, yPos }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const focusedEditor = useBoundStore((state) => state.focusedEditor);
+  const setFocusedEditor = useBoundStore((state) => state.setFocusedEditor);
+
+  // A helper state to allow single-click a selected pod and enter edit mode.
   const Wrap = (child) => (
     <Box
       sx={{
@@ -207,7 +221,10 @@ export const RichNode = memo<Props>(function ({ data, id, isConnectable, selecte
           cursor: "auto",
           fontSize: 16,
         }}
-        className="custom-drag-handle"
+        onMouseDown={() => {
+          setFocusedEditor(id);
+        }}
+        className={focusedEditor === id ? "custom-drag-handle" : "nodrag"}
       >
         {" "}
         {Wrap(
@@ -219,7 +236,7 @@ export const RichNode = memo<Props>(function ({ data, id, isConnectable, selecte
               width: "100%",
               height: "100%",
               backgroundColor: "white",
-              borderColor: selected ? "#5e92f3" : "#d6dee6",
+              borderColor: focusedEditor !== id ? "#d6dee6" : "#5e92f3",
             }}
           >
             <Box
