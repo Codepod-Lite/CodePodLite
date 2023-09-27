@@ -30,7 +30,14 @@ import {
   StrikeExtension,
   UnderlineExtension,
 } from "remirror/extensions";
-import { Remirror, useRemirror, ThemeProvider, EditorComponent, ReactComponentExtension } from "@remirror/react";
+import {
+  Remirror,
+  useRemirror,
+  ThemeProvider,
+  EditorComponent,
+  ReactComponentExtension,
+  useCommands,
+} from "@remirror/react";
 import "remirror/styles/all.css";
 
 import Box from "@mui/material/Box";
@@ -56,8 +63,21 @@ const MyStyledWrapper = styled("div")(
 `
 );
 
-const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: string; id: string }) => {
+function HotKeyControl({ id }) {
   const focusedEditor = useBoundStore((state) => state.focusedEditor);
+
+  const commands = useCommands();
+  useEffect(() => {
+    if (focusedEditor === id) {
+      commands.focus();
+    } else {
+      commands.blur();
+    }
+  }, [focusedEditor]);
+  return <></>;
+}
+
+const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: string; id: string }) => {
   const setFocusedEditor = useBoundStore((state) => state.setFocusedEditor);
 
   const { manager, state } = useRemirror({
@@ -113,7 +133,15 @@ const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: strin
   return (
     <Box
       className="remirror-theme"
+      onFocus={() => {
+        setFocusedEditor(id);
+        // if (resetSelection()) updateView();
+      }}
+      onBlur={() => {
+        setFocusedEditor(undefined);
+      }}
       sx={{
+        userSelect: "text",
         cursor: "auto",
         // Display different markers for different levels in nested ordered lists.
         ol: {
@@ -127,16 +155,38 @@ const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: strin
         },
       }}
       overflow="auto"
-      onFocus={() => {
-        setFocusedEditor(id);
-      }}
-      onBlur={() => {
-        setFocusedEditor(undefined);
-      }}
     >
       <ThemeProvider>
         <MyStyledWrapper>
-          <Remirror manager={manager} initialContent={state} editable={true}>
+          <Box
+            sx={{
+              // set height and width to cover the whole editor.
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "101%",
+              height: "132%",
+              zIndex: 10,
+            }}
+          >
+            {/* Overlay */}
+          </Box>
+          <Remirror
+            editable={true}
+            manager={manager}
+            // Must set initialContent, otherwise the Reactflow will fire two
+            // dimension change events at the beginning. This should be caused
+            // by initialContent being empty, then the actual content. Setting
+            // it to the actual content at the beginning will prevent this.
+            initialContent={state}
+            // Should not set state and onChange (the controlled Remirror editor
+            // [1]), otherwise Chinsee (or CJK) input methods will not be
+            // supported [2].
+            // - [1] https://remirror.io/docs/controlled-editor
+            // - [2] demo that Chinese input method is not working:
+            //   https://remirror.vercel.app/?path=/story/editors-controlled--editable
+          >
+            <HotKeyControl id={id} />
             <EditorComponent />
           </Remirror>
         </MyStyledWrapper>
@@ -175,7 +225,6 @@ export const RichNode = memo<Props>(function ({ data, id, isConnectable, selecte
   const focusedEditor = useBoundStore((state) => state.focusedEditor);
   const setFocusedEditor = useBoundStore((state) => state.setFocusedEditor);
 
-  // A helper state to allow single-click a selected pod and enter edit mode.
   const Wrap = (child) => (
     <Box
       sx={{
@@ -221,10 +270,10 @@ export const RichNode = memo<Props>(function ({ data, id, isConnectable, selecte
           cursor: "auto",
           fontSize: 16,
         }}
-        onMouseDown={() => {
+        onClick={() => {
           setFocusedEditor(id);
         }}
-        className={focusedEditor === id ? "custom-drag-handle" : "nodrag"}
+        className={`custom-drag-handle`}
       >
         {" "}
         {Wrap(
