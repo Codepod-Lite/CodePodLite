@@ -1,6 +1,7 @@
 import { memo, useState, useRef, useEffect } from "react";
-import { Handle, NodeProps, Position } from "reactflow";
+import { Handle, NodeProps, Position, useReactFlow } from "reactflow";
 import { useBoundStore } from "../lib/store/index.tsx";
+import { ConfirmDeleteButton } from "./utils.tsx";
 
 import {
   BoldExtension,
@@ -46,6 +47,7 @@ import InputBase from "@mui/material/InputBase";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import Tooltip from "@mui/material/Tooltip";
 import DeleteIcon from "@mui/icons-material/Delete";
+import Button from "@mui/material/Button";
 import { ResizableBox } from "react-resizable";
 
 import "./components.css";
@@ -78,6 +80,7 @@ function HotKeyControl({ id }) {
 }
 
 const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: string; id: string }) => {
+  const focusedEditor = useBoundStore((state) => state.focusedEditor);
   const setFocusedEditor = useBoundStore((state) => state.setFocusedEditor);
 
   const { manager, state } = useRemirror({
@@ -166,7 +169,7 @@ const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: strin
               left: 0,
               width: "101%",
               height: "132%",
-              zIndex: 10,
+              zIndex: focusedEditor === id ? -1 : 10,
             }}
           >
             {/* Overlay */}
@@ -196,11 +199,19 @@ const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: strin
 };
 
 function MyFloatingToolbar({ id }: { id: string }) {
+  const reactFlowInstance = useReactFlow();
+
+
   return (
     <>
-      <Tooltip title="Delete">
-        <DeleteIcon fontSize="small" />
-      </Tooltip>
+        <Tooltip title="Delete">
+          <ConfirmDeleteButton
+            size="small"
+            handleConfirm={() => {
+              reactFlowInstance.deleteElements({ nodes: [{ id }] });
+            }}
+          />
+        </Tooltip>
     </>
   );
 }
@@ -345,6 +356,7 @@ export const RichNode = memo<Props>(function ({ data, id, isConnectable, selecte
               </Box>
               <Box
                 sx={{
+                  // zindex should be greater than pods
                   // opacity: showToolbar ? 1 : 0,
                   display: "flex",
                   marginLeft: "10px",
@@ -354,7 +366,7 @@ export const RichNode = memo<Props>(function ({ data, id, isConnectable, selecte
                   right: "-2px",
                   top: "2px",
                   background: "white",
-                  zIndex: 10,
+                  zIndex: 12,
                   justifyContent: "center",
                   alignItems: "center",
                 }}
