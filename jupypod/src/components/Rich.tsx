@@ -201,17 +201,16 @@ const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: strin
 function MyFloatingToolbar({ id }: { id: string }) {
   const reactFlowInstance = useReactFlow();
 
-
   return (
     <>
-        <Tooltip title="Delete">
-          <ConfirmDeleteButton
-            size="small"
-            handleConfirm={() => {
-              reactFlowInstance.deleteElements({ nodes: [{ id }] });
-            }}
-          />
-        </Tooltip>
+      <Tooltip title="Delete">
+        <ConfirmDeleteButton
+          size="small"
+          handleConfirm={() => {
+            reactFlowInstance.deleteElements({ nodes: [{ id }] });
+          }}
+        />
+      </Tooltip>
     </>
   );
 }
@@ -284,7 +283,7 @@ export const RichNode = memo<Props>(function ({ data, id, isConnectable, selecte
         onClick={() => {
           setFocusedEditor(id);
         }}
-        className={`custom-drag-handle`}
+        className={focusedEditor === id ? "nodrag" : "custom-drag-handle"}
       >
         {" "}
         {Wrap(
