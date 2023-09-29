@@ -1,4 +1,4 @@
-import { memo, useState, useRef, useEffect } from "react";
+import { memo, useCallback, useRef, useEffect } from "react";
 import { Handle, NodeProps, Position, useReactFlow } from "reactflow";
 import { useBoundStore } from "../lib/store/index.tsx";
 import { ConfirmDeleteButton } from "./utils.tsx";
@@ -38,19 +38,112 @@ import {
   EditorComponent,
   ReactComponentExtension,
   useCommands,
+  ToggleBoldButton,
+  ToggleItalicButton,
+  ToggleUnderlineButton,
+  ToggleCodeButton,
+  ToggleStrikeButton,
+  FloatingToolbar,
+  CommandButton,
+  CommandButtonProps,
 } from "@remirror/react";
 import "remirror/styles/all.css";
 
 import Box from "@mui/material/Box";
 import { styled } from "@mui/material";
 import InputBase from "@mui/material/InputBase";
-import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import Tooltip from "@mui/material/Tooltip";
-import DeleteIcon from "@mui/icons-material/Delete";
-import Button from "@mui/material/Button";
+import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
 import { ResizableBox } from "react-resizable";
 
 import "./components.css";
+
+const EditorToolbar = () => {
+  return (
+    <>
+      <FloatingToolbar
+        // By default, MUI's Popper creates a Portal, which is a ROOT html
+        // elements that prevents paning on reactflow canvas. Therefore, we
+        // disable the portal behavior.
+        disablePortal
+        sx={{
+          button: {
+            padding: 0,
+            border: "none",
+            borderRadius: "5px",
+            marginLeft: "5px",
+          },
+          border: "2px solid grey",
+          borderRadius: "2px",
+          alignItems: "center",
+          backgroundColor: "black",
+        }}
+      >
+        <ToggleBoldButton />
+        <ToggleItalicButton />
+        <ToggleUnderlineButton />
+        <ToggleStrikeButton />
+        <ToggleCodeButton />
+        <SetHighlightButton color="lightpink" />
+        <SetHighlightButton color="yellow" />
+        <SetHighlightButton color="lightgreen" />
+        <SetHighlightButton color="lightcyan" />
+        <SetHighlightButton />
+
+        {/* <TextAlignmentButtonGroup /> */}
+        {/* <IndentationButtonGroup /> */}
+        {/* <BaselineButtonGroup /> */}
+      </FloatingToolbar>
+    </>
+  );
+};
+
+export interface SetHighlightButtonProps
+  extends Omit<CommandButtonProps, "commandName" | "active" | "enabled" | "attrs" | "onSelect" | "icon"> {}
+
+export const SetHighlightButton: React.FC<SetHighlightButtonProps | { color: string }> = ({
+  color = null,
+  ...props
+}) => {
+  const { setTextHighlight, removeTextHighlight } = useCommands();
+
+  const handleSelect = useCallback(() => {
+    if (color === null) {
+      removeTextHighlight();
+    } else {
+      setTextHighlight(color);
+    }
+    // TODO toggle the bar
+  }, [color, removeTextHighlight, setTextHighlight]);
+
+  const enabled = true;
+
+  return (
+    <CommandButton
+      {...props}
+      commandName="setHighlight"
+      label={color ? "Highlight" : "Clear Highlight"}
+      enabled={enabled}
+      onSelect={handleSelect}
+      icon={
+        color ? (
+          <Box
+            sx={{
+              backgroundColor: color,
+              paddingX: "4px",
+              borderRadius: "4px",
+              lineHeight: 1.2,
+            }}
+          >
+            A
+          </Box>
+        ) : (
+          <FormatColorResetIcon />
+        )
+      }
+    />
+  );
+};
 
 const MyStyledWrapper = styled("div")(
   () => `
@@ -191,6 +284,7 @@ const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: strin
           >
             <HotKeyControl id={id} />
             <EditorComponent />
+            <EditorToolbar />
           </Remirror>
         </MyStyledWrapper>
       </ThemeProvider>
