@@ -1,4 +1,4 @@
-import { memo, useState, useRef } from "react";
+import { memo, useState, useRef, ReactNode } from "react";
 import { Handle, NodeProps, Position } from "reactflow";
 
 import {
@@ -29,13 +29,25 @@ import {
   StrikeExtension,
   UnderlineExtension,
 } from "remirror/extensions";
-import { Remirror, useRemirror, ThemeProvider, EditorComponent, ReactComponentExtension } from "@remirror/react";
+import {
+  Remirror,
+  useRemirror,
+  ThemeProvider,
+  EditorComponent,
+  ReactComponentExtension,
+} from "@remirror/react";
 import "remirror/styles/all.css";
 
 import Box from "@mui/material/Box";
 import { styled } from "@mui/material";
 import InputBase from "@mui/material/InputBase";
 import { ResizableBox } from "react-resizable";
+import { JSX } from "react/jsx-runtime";
+
+import {
+  MathInlineExtension,
+  MathBlockExtension,
+} from "../extensions/mathExtension";
 
 import "./components.css";
 
@@ -52,7 +64,13 @@ const MyStyledWrapper = styled("div")(
 `
 );
 
-const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: string; id: string }) => {
+const MyEditor = ({
+  placeholder = "Start typing...",
+  id,
+}: {
+  placeholder?: string;
+  id: string;
+}) => {
   const { manager, state } = useRemirror({
     extensions: () => [
       new PlaceholderExtension({ placeholder }),
@@ -89,6 +107,9 @@ const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: strin
       //   autoLinkAllowedTLDs: ["dev", ...TOP_50_TLDS],
       // }),
       new UnderlineExtension(),
+      // Math Parse
+      new MathInlineExtension(),
+      new MathBlockExtension(),
     ],
     // Set the initial content.
     content: "",
@@ -146,9 +167,26 @@ interface Props {
   yPos: number;
 }
 
-export const RichNode = memo<Props>(function ({ data, id, isConnectable, selected, xPos, yPos }) {
+export const RichNode = memo<Props>(function ({
+  data,
+  id,
+  isConnectable,
+  selected,
+  xPos,
+  yPos,
+}) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const Wrap = (child) => (
+
+  const Wrap = (
+    child:
+      | string
+      | number
+      | boolean
+      | JSX.Element
+      | Iterable<ReactNode>
+      | null
+      | undefined
+  ) => (
     <Box
       sx={{
         "& .react-resizable-handle": {
@@ -161,7 +199,7 @@ export const RichNode = memo<Props>(function ({ data, id, isConnectable, selecte
         height={100}
         width={250}
         axis={"x"}
-        minConstraints={[200, 200]}
+        minConstraints={[100, 200]}
       >
         <Box
           sx={{
