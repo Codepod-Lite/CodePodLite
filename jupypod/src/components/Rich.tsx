@@ -1,7 +1,9 @@
-import { memo, useCallback, useRef, useEffect } from "react";
+import { memo, useCallback, useRef, useEffect, useState, ReactNode } from "react";
 import { Handle, NodeProps, Position, useReactFlow } from "reactflow";
 import { useBoundStore } from "../lib/store/index.tsx";
 import { ConfirmDeleteButton } from "./utils.tsx";
+import { memo, useState, useRef, ReactNode } from "react";
+import { Handle, NodeProps, Position } from "reactflow";
 
 import {
   BoldExtension,
@@ -55,6 +57,12 @@ import InputBase from "@mui/material/InputBase";
 import Tooltip from "@mui/material/Tooltip";
 import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
 import { ResizableBox } from "react-resizable";
+import { JSX } from "react/jsx-runtime";
+
+import {
+  MathInlineExtension,
+  MathBlockExtension,
+} from "../extensions/mathExtension";
 
 import "./components.css";
 
@@ -212,6 +220,9 @@ const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: strin
       //   autoLinkAllowedTLDs: ["dev", ...TOP_50_TLDS],
       // }),
       new UnderlineExtension(),
+      // Math Parse
+      new MathInlineExtension(),
+      new MathBlockExtension(),
     ],
     // Set the initial content.
     content: "",
@@ -323,13 +334,28 @@ interface Props {
   yPos: number;
 }
 
-export const RichNode = memo<Props>(function ({ data, id, isConnectable, selected, xPos, yPos }) {
+export const RichNode = memo<Props>(function ({
+  data,
+  id,
+  isConnectable,
+  selected,
+  xPos,
+  yPos,
+}) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const focusedEditor = useBoundStore((state) => state.focusedEditor);
   const setFocusedEditor = useBoundStore((state) => state.setFocusedEditor);
-
-  const Wrap = (child) => (
+  const Wrap = (
+    child:
+      | string
+      | number
+      | boolean
+      | JSX.Element
+      | Iterable<ReactNode>
+      | null
+      | undefined
+  ) => (
     <Box
       sx={{
         "& .react-resizable-handle": {
@@ -342,7 +368,7 @@ export const RichNode = memo<Props>(function ({ data, id, isConnectable, selecte
         height={100}
         width={250}
         axis={"x"}
-        minConstraints={[200, 200]}
+        minConstraints={[100, 200]}
       >
         <Box
           sx={{
