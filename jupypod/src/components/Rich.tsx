@@ -2,8 +2,6 @@ import { memo, useCallback, useRef, useEffect, useState, ReactNode } from "react
 import { Handle, NodeProps, Position, useReactFlow } from "reactflow";
 import { useBoundStore } from "../lib/store/index.tsx";
 import { ConfirmDeleteButton } from "./utils.tsx";
-import { memo, useState, useRef, ReactNode } from "react";
-import { Handle, NodeProps, Position } from "reactflow";
 
 import {
   BoldExtension,
