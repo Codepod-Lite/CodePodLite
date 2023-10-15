@@ -87,6 +87,7 @@ export interface CanvasSlice {
 
   focusedEditor: string | undefined;
   setFocusedEditor: (id?: string) => void;
+  // saveCanvas: (nodes: Node[]) => void;
 }
 
 export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (set, get) => ({
@@ -120,4 +121,26 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
       focusedEditor: id,
     }));
   },
+
+  // saveCanvas: (nodes) => {
+  //   const notebook = {
+  //     metadata: {},
+  //     nbformat: 4,
+  //     nbformat_minor: 0,
+  //     cells: []
+  //   };
+
+  //   nodes.forEach(node => {
+  //     if (node.type?.localeCompare("RICH") === 0) {
+  //       const cell = {
+  //         cell_type: "markdown",
+  //         metadata: {
+  //           id: node.id,
+  //           position: node.position,
+  //         },
+  //         content: node.getMarkdown()
+  //       }
+  //     }
+  //   })
+  // }
 });
