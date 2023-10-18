@@ -1,5 +1,5 @@
 import { memo, useCallback, useRef, useEffect, useState, ReactNode } from "react";
-import { Handle, NodeProps, Position, useReactFlow } from "reactflow";
+import { Handle, NodeProps, Position, useReactFlow, Node } from "reactflow";
 import { useBoundStore } from "../lib/store/index.tsx";
 import { ConfirmDeleteButton } from "./utils.tsx";
 
@@ -46,8 +46,10 @@ import {
   FloatingToolbar,
   CommandButton,
   CommandButtonProps,
+  OnChangeJSON
 } from "@remirror/react";
 import "remirror/styles/all.css";
+import { RemirrorJSON } from 'remirror';
 
 import Box from "@mui/material/Box";
 import { styled } from "@mui/material";
@@ -181,6 +183,13 @@ function HotKeyControl({ id }) {
 const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: string; id: string }) => {
   const focusedEditor = useBoundStore((state) => state.focusedEditor);
   const setFocusedEditor = useBoundStore((state) => state.setFocusedEditor);
+  const nodes = useBoundStore((state) => state.nodes);
+  // when editor changes, find the node with matching id and update its content to match
+  const handleEditorChange = useCallback((json: RemirrorJSON) => {
+    console.log(json);
+    const matchedNode = nodes.find((node: Node) => node.id === id);
+    matchedNode.data.content = json;
+  }, []);
 
   const { manager, state } = useRemirror({
     extensions: () => [
@@ -293,6 +302,7 @@ const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: strin
           >
             <HotKeyControl id={id} />
             <EditorComponent />
+            <OnChangeJSON onChange={handleEditorChange} />
             <EditorToolbar />
           </Remirror>
         </MyStyledWrapper>
