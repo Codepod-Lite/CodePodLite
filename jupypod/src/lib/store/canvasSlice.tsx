@@ -68,7 +68,51 @@ function createNewNode(type: "SCOPE" | "CODE" | "RICH", position): Node {
       name: "",
       parent: "ROOT",
       level: 0,
-      content: "",
+      state: {}
+    },
+    dragHandle: ".custom-drag-handle",
+  };
+  return newNode;
+}
+
+function createStoredNode(type: "SCOPE" | "CODE" | "RICH", position, state: any): Node {
+  const id = myNanoId();
+  const newNode = {
+    id,
+    type,
+    position,
+    // ...(type === "SCOPE"
+    //   ? {
+    //       width: newScopeNodeShapeConfig.width,
+    //       height: newScopeNodeShapeConfig.height,
+    //       style: {
+    //         backgroundColor: level2color[0],
+    //         width: newScopeNodeShapeConfig.width,
+    //         height: newScopeNodeShapeConfig.height,
+    //       },
+    //     }
+    //   : {
+    width: newNodeShapeConfig.width,
+    // Previously, we should not specify height, so that the pod can grow
+    // when content changes. But when we add auto-layout on adding a new
+    // node, unspecified height will cause  the node to be added always at
+    // the top-left corner (the reason is unknown). Thus, we have to
+    // specify the height here. Note that this height is a dummy value;
+    // the content height will still be adjusted based on content height.
+    height: newNodeShapeConfig.height,
+    style: {
+      width: newNodeShapeConfig.width,
+      // It turns out that this height should not be specified to let the
+      // height change automatically.
+      //
+      // height: 200
+    },
+    data: {
+      label: id,
+      name: "",
+      parent: "ROOT",
+      level: 0,
+      state: state === undefined ? {} : state
     },
     dragHandle: ".custom-drag-handle",
   };
@@ -80,7 +124,7 @@ function parseFromLocalStorage(notebook: Notebook) {
   notebook.cells.forEach((cell) => {
     // const cellType = cell.celltype === "markdown" ? "RICH" : "CODE";
     const cellType = "RICH";
-    const node = createNewNode(cellType, cell.metadata.position);
+    const node = createStoredNode(cellType, cell.metadata.position, cell.source);
     nodes.push(node);
   });
   return nodes;
@@ -163,7 +207,7 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
             id: node.id,
             position: node.position,
           },
-          source: node.data.content,
+          source: node.data.state,
         };
         notebook.cells.push(cell);
       }

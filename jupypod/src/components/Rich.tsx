@@ -180,15 +180,14 @@ function HotKeyControl({ id }) {
   return <></>;
 }
 
-const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: string; id: string }) => {
+const MyEditor = ({ placeholder = "Start typing...", id, data }: { placeholder?: string; id: string, data: any }) => {
   const focusedEditor = useBoundStore((state) => state.focusedEditor);
   const setFocusedEditor = useBoundStore((state) => state.setFocusedEditor);
   const nodes = useBoundStore((state) => state.nodes);
   // when editor changes, find the node with matching id and update its content to match
   const handleEditorChange = useCallback((json: RemirrorJSON) => {
-    console.log(json);
     const matchedNode = nodes.find((node: Node) => node.id === id);
-    matchedNode.data.content = json;
+    matchedNode.data.state = json;
   }, []);
 
   const { manager, state } = useRemirror({
@@ -232,7 +231,7 @@ const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: strin
       new MathBlockExtension(),
     ],
     // Set the initial content.
-    content: "",
+    content: Object.keys(data.state).length !== 0 ? data.state: "",
 
     // Place the cursor at the start of the document. This can also be set to
     // `end`, `all` or a numbered position.
@@ -504,7 +503,7 @@ export const RichNode = memo<Props>(function ({
               </Box>
             </Box>
             <Box>
-              <MyEditor id={id} />
+              <MyEditor id={id} data={data}/>
             </Box>
           </Box>
         )}
