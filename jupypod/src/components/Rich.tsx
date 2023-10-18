@@ -322,6 +322,7 @@ function MyFloatingToolbar({ id }: { id: string }) {
           size="small"
           handleConfirm={() => {
             reactFlowInstance.deleteElements({ nodes: [{ id }] });
+            saveCanvas();
           }}
         />
       </Tooltip>

@@ -106,6 +106,7 @@ function Flow() {
           y={points.y}
           addRich={() => {
             addNode("RICH", project({ x: client.x, y: client.y }), parentNode);
+            saveCanvas();
           }}
         />
       )}
