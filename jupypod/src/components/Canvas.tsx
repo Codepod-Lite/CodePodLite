@@ -43,6 +43,7 @@ function Flow() {
 
   const nodes = useBoundStore((state) => state.nodes);
   const addNode = useBoundStore((state) => state.addNode);
+  const saveCanvas = useBoundStore((state) => state.saveCanvas);
   const onNodesChange = useBoundStore((state) => state.onNodesChange);
 
   const [showContextMenu, setShowContextMenu] = useState(false);
@@ -103,7 +104,9 @@ function Flow() {
         <CanvasContextMenu
           x={points.x}
           y={points.y}
-          addRich={() => addNode("RICH", project({ x: client.x, y: client.y }), parentNode)}
+          addRich={() => {
+            addNode("RICH", project({ x: client.x, y: client.y }), parentNode);
+          }}
         />
       )}
     </Box>

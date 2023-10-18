@@ -313,6 +313,7 @@ const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: strin
 
 function MyFloatingToolbar({ id }: { id: string }) {
   const reactFlowInstance = useReactFlow();
+  const saveCanvas = useBoundStore((state) => state.saveCanvas);
 
   return (
     <>

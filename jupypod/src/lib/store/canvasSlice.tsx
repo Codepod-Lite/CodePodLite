@@ -21,6 +21,7 @@ import {
   NodeDragHandler,
   ReactFlowInstance,
 } from "reactflow";
+import { parse } from "dotenv";
 
 export const newNodeShapeConfig = {
   width: 250,
@@ -67,10 +68,22 @@ function createNewNode(type: "SCOPE" | "CODE" | "RICH", position): Node {
       name: "",
       parent: "ROOT",
       level: 0,
+      content: "",
     },
     dragHandle: ".custom-drag-handle",
   };
   return newNode;
+}
+
+function parseFromLocalStorage(notebook: Notebook) {
+  const nodes: Node[] = [];
+  notebook.cells.forEach((cell) => {
+    // const cellType = cell.celltype === "markdown" ? "RICH" : "CODE";
+    const cellType = "RICH";
+    const node = createNewNode(cellType, cell.metadata.position);
+    nodes.push(node);
+  });
+  return nodes;
 }
 
 export interface CanvasSlice {
@@ -87,17 +100,25 @@ export interface CanvasSlice {
 
   focusedEditor: string | undefined;
   setFocusedEditor: (id?: string) => void;
-  // saveCanvas: (nodes: Node[]) => void;
 
   saveCanvas: (nodes: Node[]) => void;
 }
 
+export interface Notebook {
+  metadata: object;
+  nbformat: 4;
+  nbformat_minor: 0;
+  cells: any[];
+}
+
 export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (set, get) => ({
-  nodes: [
-    { id: "1", type: "RICH", data: {}, position: { x: -50, y: 250 }, dragHandle: ".custom-drag-handle" },
-    { id: "2", type: "RICH", data: {}, position: { x: -50, y: 100 }, dragHandle: ".custom-drag-handle" },
-    { id: "3", type: "RICH", data: {}, position: { x: 250, y: 100 }, dragHandle: ".custom-drag-handle" },
-  ],
+  // nodes: [
+  //   { id: "1", type: "RICH", data: {}, position: { x: -50, y: 250 }, dragHandle: ".custom-drag-handle" },
+  //   { id: "2", type: "RICH", data: {}, position: { x: -50, y: 100 }, dragHandle: ".custom-drag-handle" },
+  //   { id: "3", type: "RICH", data: {}, position: { x: 250, y: 100 }, dragHandle: ".custom-drag-handle" },
+  // ],
+  nodes: localStorage.getItem("Canvas") ? parseFromLocalStorage(JSON.parse(localStorage.getItem("Canvas")!)) : [],
+  // nodes: [],
   edges: [],
 
   addNode: (type, position, parent = "ROOT") => {
@@ -109,7 +130,6 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
       ],
     }));
   },
-
 
   onNodesChange: (changes: NodeChange[]) => {
     const newNodes = applyNodeChanges(changes, get().nodes);
@@ -125,48 +145,30 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
     }));
   },
 
-  // saveCanvas: (nodes) => {
-  //   const notebook = {
-  //     metadata: {},
-  //     nbformat: 4,
-  //     nbformat_minor: 0,
-  //     cells: []
-  //   };
-
-  //   nodes.forEach(node => {
-  //     if (node.type?.localeCompare("RICH") === 0) {
-  //       const cell = {
-  //         cell_type: "markdown",
-  //         metadata: {
-  //           id: node.id,
-  //           position: node.position,
-  //         },
-  //         content: node.getMarkdown()
-  //       }
-  //     }
-  //   })
-  // }
-
-  saveCanvas: (nodes) => {
-    const notebook = {
+  saveCanvas: () => {
+    const nodes = get().nodes;
+    const notebook: Notebook = {
       metadata: {},
       nbformat: 4,
       nbformat_minor: 0,
-      cells: []
+      cells: [],
     };
 
-    nodes.forEach(node => {
+    nodes.forEach((node: Node) => {
+      let cell;
       if (node.type?.localeCompare("RICH") === 0) {
-        const cell = {
+        cell = {
           cell_type: "markdown",
           metadata: {
             id: node.id,
             position: node.position,
           },
-          content: node.getMarkdown()
-        }
+          source: node.data.content,
+        };
+        notebook.cells.push(cell);
       }
-    })
-  }
+    });
 
+    localStorage.setItem("Canvas", JSON.stringify(notebook));
+  },
 });
