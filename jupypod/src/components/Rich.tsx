@@ -184,10 +184,12 @@ const MyEditor = ({ placeholder = "Start typing...", id, data }: { placeholder?:
   const focusedEditor = useBoundStore((state) => state.focusedEditor);
   const setFocusedEditor = useBoundStore((state) => state.setFocusedEditor);
   const nodes = useBoundStore((state) => state.nodes);
+  const saveCanvas = useBoundStore((state) => state.saveCanvas);
   // when editor changes, find the node with matching id and update its content to match
   const handleEditorChange = useCallback((json: RemirrorJSON) => {
     const matchedNode = nodes.find((node: Node) => node.id === id);
     matchedNode.data.state = json;
+    saveCanvas();
   }, []);
 
   const { manager, state } = useRemirror({
