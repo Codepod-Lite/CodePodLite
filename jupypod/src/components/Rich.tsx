@@ -1,5 +1,7 @@
-import { memo, useState, useRef, ReactNode } from "react";
-import { Handle, NodeProps, Position } from "reactflow";
+import { memo, useCallback, useRef, useEffect, useState, ReactNode } from "react";
+import { Handle, NodeProps, Position, useReactFlow } from "reactflow";
+import { useBoundStore } from "../lib/store/index.tsx";
+import { ConfirmDeleteButton } from "./utils.tsx";
 
 import {
   BoldExtension,
@@ -35,12 +37,23 @@ import {
   ThemeProvider,
   EditorComponent,
   ReactComponentExtension,
+  useCommands,
+  ToggleBoldButton,
+  ToggleItalicButton,
+  ToggleUnderlineButton,
+  ToggleCodeButton,
+  ToggleStrikeButton,
+  FloatingToolbar,
+  CommandButton,
+  CommandButtonProps,
 } from "@remirror/react";
 import "remirror/styles/all.css";
 
 import Box from "@mui/material/Box";
 import { styled } from "@mui/material";
 import InputBase from "@mui/material/InputBase";
+import Tooltip from "@mui/material/Tooltip";
+import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
 import { ResizableBox } from "react-resizable";
 import { JSX } from "react/jsx-runtime";
 
@@ -50,6 +63,93 @@ import {
 } from "../extensions/mathExtension";
 
 import "./components.css";
+
+const EditorToolbar = () => {
+  return (
+    <>
+      <FloatingToolbar
+        // By default, MUI's Popper creates a Portal, which is a ROOT html
+        // elements that prevents paning on reactflow canvas. Therefore, we
+        // disable the portal behavior.
+        disablePortal
+        sx={{
+          button: {
+            padding: 0,
+            border: "none",
+            borderRadius: "5px",
+            marginLeft: "5px",
+          },
+          border: "2px solid grey",
+          borderRadius: "2px",
+          alignItems: "center",
+          backgroundColor: "black",
+        }}
+      >
+        <ToggleBoldButton />
+        <ToggleItalicButton />
+        <ToggleUnderlineButton />
+        <ToggleStrikeButton />
+        <ToggleCodeButton />
+        <SetHighlightButton color="lightpink" />
+        <SetHighlightButton color="yellow" />
+        <SetHighlightButton color="lightgreen" />
+        <SetHighlightButton color="lightcyan" />
+        <SetHighlightButton />
+
+        {/* <TextAlignmentButtonGroup /> */}
+        {/* <IndentationButtonGroup /> */}
+        {/* <BaselineButtonGroup /> */}
+      </FloatingToolbar>
+    </>
+  );
+};
+
+export interface SetHighlightButtonProps
+  extends Omit<CommandButtonProps, "commandName" | "active" | "enabled" | "attrs" | "onSelect" | "icon"> {}
+
+export const SetHighlightButton: React.FC<SetHighlightButtonProps | { color: string }> = ({
+  color = null,
+  ...props
+}) => {
+  const { setTextHighlight, removeTextHighlight } = useCommands();
+
+  const handleSelect = useCallback(() => {
+    if (color === null) {
+      removeTextHighlight();
+    } else {
+      setTextHighlight(color);
+    }
+    // TODO toggle the bar
+  }, [color, removeTextHighlight, setTextHighlight]);
+
+  const enabled = true;
+
+  return (
+    <CommandButton
+      {...props}
+      commandName="setHighlight"
+      label={color ? "Highlight" : "Clear Highlight"}
+      enabled={enabled}
+      onSelect={handleSelect}
+      icon={
+        color ? (
+          <Box
+            sx={{
+              backgroundColor: color,
+              paddingX: "4px",
+              borderRadius: "4px",
+              lineHeight: 1.2,
+            }}
+          >
+            A
+          </Box>
+        ) : (
+          <FormatColorResetIcon />
+        )
+      }
+    />
+  );
+};
 
 const MyStyledWrapper = styled("div")(
   () => `
@@ -64,13 +164,24 @@ const MyStyledWrapper = styled("div")(
 `
 );
 
-const MyEditor = ({
-  placeholder = "Start typing...",
-  id,
-}: {
-  placeholder?: string;
-  id: string;
-}) => {
+function HotKeyControl({ id }) {
+  const focusedEditor = useBoundStore((state) => state.focusedEditor);
+
+  const commands = useCommands();
+  useEffect(() => {
+    if (focusedEditor === id) {
+      commands.focus();
+    } else {
+      commands.blur();
+    }
+  }, [focusedEditor]);
+  return <></>;
+}
+
+const MyEditor = ({ placeholder = "Start typing...", id }: { placeholder?: string; id: string }) => {
+  const focusedEditor = useBoundStore((state) => state.focusedEditor);
+  const setFocusedEditor = useBoundStore((state) => state.setFocusedEditor);
+
   const { manager, state } = useRemirror({
     extensions: () => [
       new PlaceholderExtension({ placeholder }),
@@ -126,8 +237,16 @@ const MyEditor = ({
   });
   return (
     <Box
-      className="remirror-theme nopan"
+      className="remirror-theme"
+      onFocus={() => {
+        setFocusedEditor(id);
+        // if (resetSelection()) updateView();
+      }}
+      onBlur={() => {
+        setFocusedEditor(undefined);
+      }}
       sx={{
+        userSelect: "text",
         cursor: "auto",
         // Display different markers for different levels in nested ordered lists.
         ol: {
@@ -144,14 +263,60 @@ const MyEditor = ({
     >
       <ThemeProvider>
         <MyStyledWrapper>
-          <Remirror manager={manager} initialContent={state} editable={true}>
+          <Box
+            sx={{
+              // set height and width to cover the whole editor.
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "101%",
+              height: "132%",
+              zIndex: focusedEditor === id ? -1 : 10,
+            }}
+          >
+            {/* Overlay */}
+          </Box>
+          <Remirror
+            editable={true}
+            manager={manager}
+            // Must set initialContent, otherwise the Reactflow will fire two
+            // dimension change events at the beginning. This should be caused
+            // by initialContent being empty, then the actual content. Setting
+            // it to the actual content at the beginning will prevent this.
+            initialContent={state}
+            // Should not set state and onChange (the controlled Remirror editor
+            // [1]), otherwise Chinsee (or CJK) input methods will not be
+            // supported [2].
+            // - [1] https://remirror.io/docs/controlled-editor
+            // - [2] demo that Chinese input method is not working:
+            //   https://remirror.vercel.app/?path=/story/editors-controlled--editable
+          >
+            <HotKeyControl id={id} />
             <EditorComponent />
+            <EditorToolbar />
           </Remirror>
         </MyStyledWrapper>
       </ThemeProvider>
     </Box>
   );
 };
+
+function MyFloatingToolbar({ id }: { id: string }) {
+  const reactFlowInstance = useReactFlow();
+
+  return (
+    <>
+      <Tooltip title="Delete">
+        <ConfirmDeleteButton
+          size="small"
+          handleConfirm={() => {
+            reactFlowInstance.deleteElements({ nodes: [{ id }] });
+          }}
+        />
+      </Tooltip>
+    </>
+  );
+}
 
 /**
  * The React Flow node.
@@ -177,6 +342,8 @@ export const RichNode = memo<Props>(function ({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const focusedEditor = useBoundStore((state) => state.focusedEditor);
+  const setFocusedEditor = useBoundStore((state) => state.setFocusedEditor);
   const Wrap = (
     child:
       | string
@@ -231,6 +398,10 @@ export const RichNode = memo<Props>(function ({
           cursor: "auto",
           fontSize: 16,
         }}
+        onClick={() => {
+          setFocusedEditor(id);
+        }}
+        className={focusedEditor === id ? "nodrag" : "custom-drag-handle"}
       >
         {" "}
         {Wrap(
@@ -242,7 +413,7 @@ export const RichNode = memo<Props>(function ({
               width: "100%",
               height: "100%",
               backgroundColor: "white",
-              borderColor: selected ? "#5e92f3" : "#d6dee6",
+              borderColor: focusedEditor !== id ? "#d6dee6" : "#5e92f3",
             }}
           >
             <Box
@@ -302,21 +473,22 @@ export const RichNode = memo<Props>(function ({
               </Box>
               <Box
                 sx={{
+                  // zindex should be greater than pods
                   // opacity: showToolbar ? 1 : 0,
                   display: "flex",
                   marginLeft: "10px",
                   borderRadius: "4px",
                   position: "absolute",
                   border: "solid 1px #d6dee6",
-                  right: "25px",
-                  top: "-15px",
+                  right: "-2px",
+                  top: "2px",
                   background: "white",
-                  zIndex: 10,
+                  zIndex: 12,
                   justifyContent: "center",
                   alignItems: "center",
                 }}
               >
-                {/* <MyFloatingToolbar id={id} /> */}
+                <MyFloatingToolbar id={id} />
               </Box>
             </Box>
             <Box>
