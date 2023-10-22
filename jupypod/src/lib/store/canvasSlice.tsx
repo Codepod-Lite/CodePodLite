@@ -21,6 +21,7 @@ import {
   NodeDragHandler,
   ReactFlowInstance,
 } from "reactflow";
+import { parse } from "dotenv";
 
 export const newNodeShapeConfig = {
   width: 250,
@@ -67,10 +68,66 @@ function createNewNode(type: "SCOPE" | "CODE" | "RICH", position): Node {
       name: "",
       parent: "ROOT",
       level: 0,
+      state: {}
     },
     dragHandle: ".custom-drag-handle",
   };
   return newNode;
+}
+
+function createStoredNode(type: "SCOPE" | "CODE" | "RICH", position, state: any): Node {
+  const id = myNanoId();
+  const newNode = {
+    id,
+    type,
+    position,
+    // ...(type === "SCOPE"
+    //   ? {
+    //       width: newScopeNodeShapeConfig.width,
+    //       height: newScopeNodeShapeConfig.height,
+    //       style: {
+    //         backgroundColor: level2color[0],
+    //         width: newScopeNodeShapeConfig.width,
+    //         height: newScopeNodeShapeConfig.height,
+    //       },
+    //     }
+    //   : {
+    width: newNodeShapeConfig.width,
+    // Previously, we should not specify height, so that the pod can grow
+    // when content changes. But when we add auto-layout on adding a new
+    // node, unspecified height will cause  the node to be added always at
+    // the top-left corner (the reason is unknown). Thus, we have to
+    // specify the height here. Note that this height is a dummy value;
+    // the content height will still be adjusted based on content height.
+    height: newNodeShapeConfig.height,
+    style: {
+      width: newNodeShapeConfig.width,
+      // It turns out that this height should not be specified to let the
+      // height change automatically.
+      //
+      // height: 200
+    },
+    data: {
+      label: id,
+      name: "",
+      parent: "ROOT",
+      level: 0,
+      state: state === undefined ? {} : state
+    },
+    dragHandle: ".custom-drag-handle",
+  };
+  return newNode;
+}
+
+function parseFromLocalStorage(notebook: Notebook) {
+  const nodes: Node[] = [];
+  notebook.cells.forEach((cell) => {
+    // const cellType = cell.celltype === "markdown" ? "RICH" : "CODE";
+    const cellType = "RICH";
+    const node = createStoredNode(cellType, cell.metadata.position, cell.source);
+    nodes.push(node);
+  });
+  return nodes;
 }
 
 export interface CanvasSlice {
@@ -87,14 +144,25 @@ export interface CanvasSlice {
 
   focusedEditor: string | undefined;
   setFocusedEditor: (id?: string) => void;
+
+  saveCanvas: (nodes: Node[]) => void;
+}
+
+export interface Notebook {
+  metadata: object;
+  nbformat: 4;
+  nbformat_minor: 0;
+  cells: any[];
 }
 
 export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (set, get) => ({
-  nodes: [
-    { id: "1", type: "RICH", data: {}, position: { x: -50, y: 250 }, dragHandle: ".custom-drag-handle" },
-    { id: "2", type: "RICH", data: {}, position: { x: -50, y: 100 }, dragHandle: ".custom-drag-handle" },
-    { id: "3", type: "RICH", data: {}, position: { x: 250, y: 100 }, dragHandle: ".custom-drag-handle" },
-  ],
+  // nodes: [
+  //   { id: "1", type: "RICH", data: {}, position: { x: -50, y: 250 }, dragHandle: ".custom-drag-handle" },
+  //   { id: "2", type: "RICH", data: {}, position: { x: -50, y: 100 }, dragHandle: ".custom-drag-handle" },
+  //   { id: "3", type: "RICH", data: {}, position: { x: 250, y: 100 }, dragHandle: ".custom-drag-handle" },
+  // ],
+  nodes: localStorage.getItem("Canvas") ? parseFromLocalStorage(JSON.parse(localStorage.getItem("Canvas")!)) : [],
+  // nodes: [],
   edges: [],
 
   addNode: (type, position, parent = "ROOT") => {
@@ -119,5 +187,32 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
     set(() => ({
       focusedEditor: id,
     }));
+  },
+
+  saveCanvas: () => {
+    const nodes = get().nodes;
+    const notebook: Notebook = {
+      metadata: {},
+      nbformat: 4,
+      nbformat_minor: 0,
+      cells: [],
+    };
+
+    nodes.forEach((node: Node) => {
+      let cell;
+      if (node.type?.localeCompare("RICH") === 0) {
+        cell = {
+          cell_type: "markdown",
+          metadata: {
+            id: node.id,
+            position: node.position,
+          },
+          source: node.data.state,
+        };
+        notebook.cells.push(cell);
+      }
+    });
+
+    localStorage.setItem("Canvas", JSON.stringify(notebook));
   },
 });
