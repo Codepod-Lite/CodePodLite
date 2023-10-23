@@ -86,9 +86,14 @@ function Flow() {
 
   return (
     <Box className="react-flow-container" ref={reactFlowWrapper}>
-      <Button size="large" variant="contained" sx={{ position: "absolute", left: "10px", top: "10px" }}>
-        Save
-      </Button>
+      <Box sx={{ position: "absolute", left: "10px", top: "10px", zIndex: "1" }}>
+        <Button variant="contained" sx={{mr: 1.5}}>
+          Save
+        </Button>
+        <Button variant="contained" color="success">
+          Import
+        </Button>
+      </Box>
       <ReactFlow
         nodes={nodes}
         onNodesChange={onNodesChange}
