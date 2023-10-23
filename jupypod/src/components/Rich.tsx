@@ -46,10 +46,10 @@ import {
   FloatingToolbar,
   CommandButton,
   CommandButtonProps,
-  OnChangeJSON
+  OnChangeJSON,
 } from "@remirror/react";
 import "remirror/styles/all.css";
-import { RemirrorJSON } from 'remirror';
+import { RemirrorJSON } from "remirror";
 
 import Box from "@mui/material/Box";
 import { styled } from "@mui/material";
@@ -59,10 +59,7 @@ import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
 import { ResizableBox } from "react-resizable";
 import { JSX } from "react/jsx-runtime";
 
-import {
-  MathInlineExtension,
-  MathBlockExtension,
-} from "../extensions/mathExtension";
+import { MathInlineExtension, MathBlockExtension } from "../extensions/mathExtension";
 
 import "./components.css";
 
@@ -180,7 +177,7 @@ function HotKeyControl({ id }) {
   return <></>;
 }
 
-const MyEditor = ({ placeholder = "Start typing...", id, data }: { placeholder?: string; id: string, data: any }) => {
+const MyEditor = ({ placeholder = "Start typing...", id, data }: { placeholder?: string; id: string; data: any }) => {
   const focusedEditor = useBoundStore((state) => state.focusedEditor);
   const setFocusedEditor = useBoundStore((state) => state.setFocusedEditor);
   const nodes = useBoundStore((state) => state.nodes);
@@ -233,7 +230,7 @@ const MyEditor = ({ placeholder = "Start typing...", id, data }: { placeholder?:
       new MathBlockExtension(),
     ],
     // Set the initial content.
-    content: Object.keys(data.state).length !== 0 ? data.state: "",
+    content: Object.keys(data.state).length !== 0 ? data.state : "",
 
     // Place the cursor at the start of the document. This can also be set to
     // `end`, `all` or a numbered position.
@@ -345,28 +342,15 @@ interface Props {
   yPos: number;
 }
 
-export const RichNode = memo<Props>(function ({
-  data,
-  id,
-  isConnectable,
-  selected,
-  xPos,
-  yPos,
-}) {
+export const RichNode = memo<Props>(function ({ data, id, isConnectable, selected, xPos, yPos }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const focusedEditor = useBoundStore((state) => state.focusedEditor);
   const setFocusedEditor = useBoundStore((state) => state.setFocusedEditor);
-  const Wrap = (
-    child:
-      | string
-      | number
-      | boolean
-      | JSX.Element
-      | Iterable<ReactNode>
-      | null
-      | undefined
-  ) => (
+
+  const [showDeleteButton, setShowDeleteButton] = useState(false);
+
+  const Wrap = (child: string | number | boolean | JSX.Element | Iterable<ReactNode> | null | undefined) => (
     <Box
       sx={{
         "& .react-resizable-handle": {
@@ -396,11 +380,12 @@ export const RichNode = memo<Props>(function ({
   return (
     <>
       <Box
-        // onMouseEnter={() => {
-        //   setShowToolbar(true);
-        // }}
-        // onMouseLeave={() => {
-        //   setShowToolbar(false);
+        onMouseEnter={() => {
+          setShowDeleteButton(true);
+        }}
+        onMouseLeave={() => {
+          setShowDeleteButton(false);
+        }}
         //   // hide drag handle
         //   const elems = document.getElementsByClassName("global-drag-handle");
         //   Array.from(elems).forEach((elem) => {
@@ -487,7 +472,7 @@ export const RichNode = memo<Props>(function ({
               <Box
                 sx={{
                   // zindex should be greater than pods
-                  // opacity: showToolbar ? 1 : 0,
+                  opacity: showDeleteButton ? 1 : 0,
                   display: "flex",
                   marginLeft: "10px",
                   borderRadius: "4px",
@@ -505,7 +490,7 @@ export const RichNode = memo<Props>(function ({
               </Box>
             </Box>
             <Box>
-              <MyEditor id={id} data={data}/>
+              <MyEditor id={id} data={data} />
             </Box>
           </Box>
         )}
