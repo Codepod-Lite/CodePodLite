@@ -16,14 +16,14 @@ import ReactFlow, {
   Background,
   useReactFlow,
   ReactFlowProvider,
-  useNodesState
+  useNodesState,
 } from "reactflow";
 
 import RichNode from "./Rich.tsx";
 import { CanvasContextMenu } from "./CanvasContextMenu.tsx";
 
 import Box from "@mui/material/Box";
-
+import Button from "@mui/material/Button";
 
 const fitViewOptions: FitViewOptions = {
   // padding: 0.2,
@@ -86,6 +86,9 @@ function Flow() {
 
   return (
     <Box className="react-flow-container" ref={reactFlowWrapper}>
+      <Button size="large" variant="contained" sx={{ position: "absolute", left: "10px", top: "10px" }}>
+        Save
+      </Button>
       <ReactFlow
         nodes={nodes}
         onNodesChange={onNodesChange}
