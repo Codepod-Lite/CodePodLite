@@ -68,7 +68,7 @@ function createNewNode(type: "SCOPE" | "CODE" | "RICH", position): Node {
       name: "",
       parent: "ROOT",
       level: 0,
-      state: {}
+      state: {},
     },
     dragHandle: ".custom-drag-handle",
   };
@@ -112,7 +112,7 @@ function createStoredNode(type: "SCOPE" | "CODE" | "RICH", position, state: any)
       name: "",
       parent: "ROOT",
       level: 0,
-      state: state === undefined ? {} : state
+      state: state === undefined ? {} : state,
     },
     dragHandle: ".custom-drag-handle",
   };
@@ -146,6 +146,8 @@ export interface CanvasSlice {
   setFocusedEditor: (id?: string) => void;
 
   saveCanvas: (nodes: Node[]) => void;
+
+  exportFile: () => void;
 }
 
 export interface Notebook {
@@ -214,5 +216,17 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
     });
 
     localStorage.setItem("Canvas", JSON.stringify(notebook));
+  },
+
+  exportFile: () => {
+    const json = localStorage.getItem("Canvas");
+    const blob = new Blob([json!], { type: "application/json" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "notebook.json";
+    link.click();
+
+    window.URL.revokeObjectURL(url);
   },
 });

@@ -45,6 +45,7 @@ function Flow() {
   const addNode = useBoundStore((state) => state.addNode);
   const saveCanvas = useBoundStore((state) => state.saveCanvas);
   const onNodesChange = useBoundStore((state) => state.onNodesChange);
+  const exportFile = useBoundStore((state) => state.exportFile);
 
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [points, setPoints] = useState({ x: 0, y: 0 });
@@ -87,7 +88,7 @@ function Flow() {
   return (
     <Box className="react-flow-container" ref={reactFlowWrapper}>
       <Box sx={{ position: "absolute", left: "10px", top: "10px", zIndex: "1" }}>
-        <Button variant="contained" sx={{mr: 1.5}}>
+        <Button variant="contained" sx={{ mr: 1.5 }} onClick={exportFile}>
           Save
         </Button>
         <Button variant="contained" color="success">
