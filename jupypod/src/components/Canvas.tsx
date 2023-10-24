@@ -24,6 +24,7 @@ import { CanvasContextMenu } from "./CanvasContextMenu.tsx";
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import { styled } from "@mui/material/styles";
 
 const fitViewOptions: FitViewOptions = {
   // padding: 0.2,
@@ -51,6 +52,18 @@ function Flow() {
   const [points, setPoints] = useState({ x: 0, y: 0 });
   const [client, setClient] = useState({ x: 0, y: 0 });
   const [parentNode, setParentNode] = useState("ROOT");
+
+  const VisuallyHiddenInput = styled("input")({
+    clip: "rect(0 0 0 0)",
+    clipPath: "inset(50%)",
+    height: 1,
+    overflow: "hidden",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    whiteSpace: "nowrap",
+    width: 1,
+  });
 
   const onPaneContextMenu = (event) => {
     event.preventDefault();
@@ -91,8 +104,9 @@ function Flow() {
         <Button variant="contained" sx={{ mr: 1.5 }} onClick={exportFile}>
           Save
         </Button>
-        <Button variant="contained" color="success">
+        <Button component="label" variant="contained" color="success">
           Import
+          <VisuallyHiddenInput type="file" accept=".json,application/json"/>
         </Button>
       </Box>
       <ReactFlow
