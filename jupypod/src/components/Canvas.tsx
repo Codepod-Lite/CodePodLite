@@ -66,8 +66,6 @@ function Flow() {
     width: 1,
   });
 
-  
-
   const onPaneContextMenu = (event) => {
     event.preventDefault();
     setShowContextMenu(true);
@@ -96,6 +94,10 @@ function Flow() {
     [reactFlowInstance]
   );
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    importFile(e);
+  };
+
   // const onNodesChange: OnNodesChange = useCallback(
   //   (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
   //   [setNodes]
@@ -109,7 +111,7 @@ function Flow() {
         </Button>
         <Button component="label" variant="contained" color="success">
           Import
-          <VisuallyHiddenInput type="file" accept=".json,application/json" onChange={importFile}/>
+          <VisuallyHiddenInput type="file" accept=".json,application/json" onChange={handleFileUpload} />
         </Button>
       </Box>
       <ReactFlow

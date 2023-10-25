@@ -122,13 +122,13 @@ function createStoredNode(type: "SCOPE" | "CODE" | "RICH", position, state: any)
 function parseNodesFromObject(notebook: Notebook) {
   const nodes: Node[] = [];
   try {
-  notebook.cells.forEach((cell) => {
-    // const cellType = cell.celltype === "markdown" ? "RICH" : "CODE";
-    const cellType = "RICH";
-    const node = createStoredNode(cellType, cell.metadata.position, cell.source);
-    nodes.push(node);
-  });
-  return nodes;
+    notebook.cells.forEach((cell) => {
+      // const cellType = cell.celltype === "markdown" ? "RICH" : "CODE";
+      const cellType = "RICH";
+      const node = createStoredNode(cellType, cell.metadata.position, cell.source);
+      nodes.push(node);
+    });
+    return nodes;
   } catch {
     alert("File could not be parsed");
   }
@@ -168,7 +168,7 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
   //   { id: "2", type: "RICH", data: {}, position: { x: -50, y: 100 }, dragHandle: ".custom-drag-handle" },
   //   { id: "3", type: "RICH", data: {}, position: { x: 250, y: 100 }, dragHandle: ".custom-drag-handle" },
   // ],
-  nodes: localStorage.getItem("Canvas") ? parseNodesFromObject(JSON.parse(localStorage.getItem("Canvas")!)) : [],
+  nodes: localStorage.getItem("Canvas") ? parseNodesFromObject(JSON.parse(localStorage.getItem("Canvas")!))! : [],
   // nodes: [],
   edges: [],
 
@@ -198,6 +198,7 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
 
   saveCanvas: () => {
     const nodes = get().nodes;
+    console.log(nodes);
     const notebook: Notebook = {
       metadata: {},
       nbformat: 4,
@@ -238,12 +239,15 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
   importFile: (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileReader = new FileReader();
     fileReader.readAsText(e.target.files![0]);
+    // async function
     fileReader.onload = (e) => {
       const importedCanvas = JSON.parse(e.target!.result as string);
       const importedNodes = parseNodesFromObject(importedCanvas);
+      console.log(importedNodes);
       set(() => ({
         nodes: importedNodes,
       }));
+      get().saveCanvas();
     };
   },
 });
