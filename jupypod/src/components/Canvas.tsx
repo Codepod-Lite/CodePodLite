@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, SyntheticEvent } from "react";
 import { useBoundStore } from "../lib/store/index.tsx";
 
 import ReactFlow, {
@@ -47,6 +47,7 @@ function Flow() {
   const saveCanvas = useBoundStore((state) => state.saveCanvas);
   const onNodesChange = useBoundStore((state) => state.onNodesChange);
   const exportFile = useBoundStore((state) => state.exportFile);
+  const importFile = useBoundStore((state) => state.importFile);
 
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [points, setPoints] = useState({ x: 0, y: 0 });
@@ -64,6 +65,8 @@ function Flow() {
     whiteSpace: "nowrap",
     width: 1,
   });
+
+  
 
   const onPaneContextMenu = (event) => {
     event.preventDefault();
@@ -106,7 +109,7 @@ function Flow() {
         </Button>
         <Button component="label" variant="contained" color="success">
           Import
-          <VisuallyHiddenInput type="file" accept=".json,application/json"/>
+          <VisuallyHiddenInput type="file" accept=".json,application/json" onChange={importFile}/>
         </Button>
       </Box>
       <ReactFlow

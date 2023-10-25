@@ -119,7 +119,7 @@ function createStoredNode(type: "SCOPE" | "CODE" | "RICH", position, state: any)
   return newNode;
 }
 
-function parseFromLocalStorage(notebook: Notebook) {
+function parseNodesFromObject(notebook: Notebook) {
   const nodes: Node[] = [];
   notebook.cells.forEach((cell) => {
     // const cellType = cell.celltype === "markdown" ? "RICH" : "CODE";
@@ -148,6 +148,7 @@ export interface CanvasSlice {
   saveCanvas: (nodes: Node[]) => void;
 
   exportFile: () => void;
+  importFile: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export interface Notebook {
@@ -163,7 +164,7 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
   //   { id: "2", type: "RICH", data: {}, position: { x: -50, y: 100 }, dragHandle: ".custom-drag-handle" },
   //   { id: "3", type: "RICH", data: {}, position: { x: 250, y: 100 }, dragHandle: ".custom-drag-handle" },
   // ],
-  nodes: localStorage.getItem("Canvas") ? parseFromLocalStorage(JSON.parse(localStorage.getItem("Canvas")!)) : [],
+  nodes: localStorage.getItem("Canvas") ? parseNodesFromObject(JSON.parse(localStorage.getItem("Canvas")!)) : [],
   // nodes: [],
   edges: [],
 
@@ -229,4 +230,21 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
 
     window.URL.revokeObjectURL(url);
   },
+
+  importFile: (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const fileReader = new FileReader();
+      fileReader.readAsText(e.target.files![0]);
+      fileReader.onload = e => {
+      const importedCanvas = JSON.parse(e.target!.result as string);
+      const importedNodes = parseNodesFromObject(importedCanvas);
+      set(() => ({
+        nodes: importedNodes,
+      }));
+    }
+    } catch (error) {
+      alert("Error uploading the file")
+    }
+      
+  }
 });
