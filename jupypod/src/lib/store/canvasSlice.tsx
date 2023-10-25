@@ -121,6 +121,7 @@ function createStoredNode(type: "SCOPE" | "CODE" | "RICH", position, state: any)
 
 function parseNodesFromObject(notebook: Notebook) {
   const nodes: Node[] = [];
+  try {
   notebook.cells.forEach((cell) => {
     // const cellType = cell.celltype === "markdown" ? "RICH" : "CODE";
     const cellType = "RICH";
@@ -128,6 +129,9 @@ function parseNodesFromObject(notebook: Notebook) {
     nodes.push(node);
   });
   return nodes;
+  } catch {
+    alert("File could not be parsed");
+  }
 }
 
 export interface CanvasSlice {
@@ -232,19 +236,14 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
   },
 
   importFile: (e: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      const fileReader = new FileReader();
-      fileReader.readAsText(e.target.files![0]);
-      fileReader.onload = e => {
+    const fileReader = new FileReader();
+    fileReader.readAsText(e.target.files![0]);
+    fileReader.onload = (e) => {
       const importedCanvas = JSON.parse(e.target!.result as string);
       const importedNodes = parseNodesFromObject(importedCanvas);
       set(() => ({
         nodes: importedNodes,
       }));
-    }
-    } catch (error) {
-      alert("Error uploading the file")
-    }
-      
-  }
+    };
+  },
 });
