@@ -149,7 +149,7 @@ export interface CanvasSlice {
   focusedEditor: string | undefined;
   setFocusedEditor: (id?: string) => void;
 
-  saveCanvas: (nodes: Node[]) => void;
+  saveCanvas: () => void;
 
   exportFile: () => void;
   importFile: (e: React.ChangeEvent<HTMLInputElement>) => void;
