@@ -20,6 +20,8 @@ import ReactFlow, {
 } from "reactflow";
 
 import RichNode from "./Rich.tsx";
+import { GroupNode } from "./Group.tsx";
+
 import { CanvasContextMenu } from "./CanvasContextMenu.tsx";
 
 import Box from "@mui/material/Box";
@@ -35,13 +37,15 @@ const defaultEdgeOptions = {
 
 const nodeTypes = {
   RICH: RichNode,
+  GROUP: GroupNode,
 };
 
 function Flow() {
   const reactFlowWrapper = useRef<any>(null);
   const reactFlowInstance = useReactFlow();
 
-  const nodes = useBoundStore((state) => state.nodes);
+  // const nodes = useBoundStore((state) => state.nodes);
+  const nodes = [{id: 1, type: "GROUP", width: 600, height: 600, style: {backgroundColor: "rgba(187, 222, 251, 0.5)", width: 600, height: 600}, data: {}, position: {x: 100, y: 100}}];
   const addNode = useBoundStore((state) => state.addNode);
   const saveCanvas = useBoundStore((state) => state.saveCanvas);
   const onNodesChange = useBoundStore((state) => state.onNodesChange);
