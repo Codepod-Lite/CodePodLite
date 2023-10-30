@@ -43,11 +43,11 @@ export function CanvasContextMenu(props) {
           </MenuItem>
         }
         {
-          <MenuItem onClick={props.addScope} sx={ItemStyle}>
+          <MenuItem onClick={props.addGroup} sx={ItemStyle}>
           <ListItemIcon sx={{ color: "inherit" }}>
             <PostAddIcon />
           </ListItemIcon>
-          <ListItemText>New Scope</ListItemText>
+          <ListItemText>New Group</ListItemText>
         </MenuItem>
         }
       </MenuList>
