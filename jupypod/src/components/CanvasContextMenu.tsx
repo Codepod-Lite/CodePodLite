@@ -5,6 +5,7 @@ import MenuList from "@mui/material/MenuList";
 import MenuItem from "@mui/material/MenuItem";
 import React from "react";
 import NoteIcon from "@mui/icons-material/Note";
+import PostAddIcon from "@mui/icons-material/PostAdd";
 
 import "./components.css";
 
@@ -40,6 +41,14 @@ export function CanvasContextMenu(props) {
             </ListItemIcon>
             <ListItemText className="context-menu-item">New Note</ListItemText>
           </MenuItem>
+        }
+        {
+          <MenuItem onClick={props.addScope} sx={ItemStyle}>
+          <ListItemIcon sx={{ color: "inherit" }}>
+            <PostAddIcon />
+          </ListItemIcon>
+          <ListItemText>New Scope</ListItemText>
+        </MenuItem>
         }
       </MenuList>
     </Box>
