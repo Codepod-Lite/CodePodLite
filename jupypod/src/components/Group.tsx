@@ -1,19 +1,42 @@
 import {
-  memo
+  memo,
+  useState
 } from "react";
 import * as React from "react";
 import {
   NodeProps,
   useStore as useReactFlowStore,
   NodeResizer,
-  NodeResizeControl
+  NodeResizeControl,
+  useReactFlow,
 } from "reactflow";
 
 import Box from "@mui/material/Box";
 import InputBase from "@mui/material/InputBase";
 import Grid from "@mui/material/Grid";
+import Tooltip from "@mui/material/Tooltip";
+
+import { ConfirmDeleteButton } from "./utils.tsx";
 
 
+function MyFloatingToolbar({ id }: { id: string }) {
+  const reactFlowInstance = useReactFlow();
+  // const saveCanvas = useBoundStore((state) => state.saveCanvas);
+
+  return (
+    <>
+      <Tooltip title="Delete">
+        <ConfirmDeleteButton
+          size="small"
+          handleConfirm={() => {
+            reactFlowInstance.deleteElements({ nodes: [{ id }] });
+            // saveCanvas();
+          }}
+        />
+      </Tooltip>
+    </>
+  );
+}
 
 export const GroupNode = memo<NodeProps>(function GroupNode({
   data,
@@ -24,6 +47,7 @@ export const GroupNode = memo<NodeProps>(function GroupNode({
   yPos,
 
 }){
+  const [showToolbar, setShowToolbar] = useState(false);
   return (
     <Box
       // ref={ref}
@@ -36,12 +60,12 @@ export const GroupNode = memo<NodeProps>(function GroupNode({
         cursor: "auto",
         // fontSize,
       }}
-      // onMouseEnter={() => {
-      //   setShowToolbar(true);
-      // }}
-      // onMouseLeave={() => {
-      //   setShowToolbar(false);
-      // }}
+      onMouseEnter={() => {
+        setShowToolbar(true);
+      }}
+      onMouseLeave={() => {
+        setShowToolbar(false);
+      }}
       className="custom-drag-handle"
     >
       {/* <NodeResizer color="#ff0071" minWidth={100} minHeight={30} />
@@ -58,22 +82,22 @@ export const GroupNode = memo<NodeProps>(function GroupNode({
         </NodeResizeControl>
       </Box> */}
 
-      {/* <Box
+      <Box
         sx={{
           opacity: showToolbar ? 1 : 0,
           marginLeft: "10px",
           borderRadius: "4px",
           position: "absolute",
           border: "solid 1px #d6dee6",
-          right: "25px",
-          top: "-60px",
+          right: "0px",
+          top: "0px",
           background: "white",
           zIndex: 250,
           justifyContent: "center",
         }}
       >
         <MyFloatingToolbar id={id} />
-      </Box> */}
+      </Box>
       {/* <Box
         sx={{
           opacity: showToolbar ? 1 : 0,
