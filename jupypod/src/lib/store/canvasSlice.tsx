@@ -136,6 +136,32 @@ function parseFromLocalStorage(notebook: Notebook) {
   return nodes;
 }
 
+export function getAbsPos(node: Node) {
+  const x = node.position.x;
+  const y = node.position.y;
+  return { x, y };
+}
+
+function getGroupAt(
+  x: number,
+  y: number,
+  excludes: string[],
+  nodes,
+): Node {
+  const group = nodes.findLast((node: Node) => {
+    const { x: x1, y: y1 } = getAbsPos(node);
+    return (
+      node.type === "GROUP" &&
+      x >= x1 &&
+      !excludes.includes(node.id) &&
+      x <= x1 + node.width! &&
+      y >= y1 &&
+      y <= y1 + node.height!
+    );
+  });
+  return group;
+}
+
 export interface CanvasSlice {
   nodes: Node[];
   edges: Edge[];
@@ -152,6 +178,14 @@ export interface CanvasSlice {
   setFocusedEditor: (id?: string) => void;
 
   saveCanvas: (nodes: Node[]) => void;
+
+  highlightedNode?: string;
+  setHighlightedNode: (nodeID: string) => void;
+  removeHighlightedNode: () => void;
+
+  updateView: () => void;
+
+  getGroupAtPos: ({x, y}: XYPosition, exclude: string) => Node | undefined;
 }
 
 export interface Notebook {
@@ -168,10 +202,7 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
   addNode: (type, position, parent = "ROOT") => {
     const node = createNewNode(type, position);
     set((state: MyState) => ({
-      nodes: [
-        ...state.nodes,
-        node,
-      ],
+      nodes: [...state.nodes, node],
     }));
   },
 
@@ -180,6 +211,7 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
     set(() => ({
       nodes: newNodes,
     }));
+    get().updateView();
   },
 
   focusedEditor: undefined,
@@ -215,4 +247,28 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
 
     localStorage.setItem("Canvas", JSON.stringify(notebook));
   },
+
+  setHighlightedNode: (nodeID) => {
+    set({ highlightedNode: nodeID });
+  },
+
+  removeHighlightedNode: () => {
+    set({ highlightedNode: undefined });
+  },
+
+  // may need to add group color based on data level
+  updateView: () => {
+    let nodes = get().nodes;
+    nodes = nodes.map((node: Node) => ({
+      ...node,
+      className: get().highlightedNode === node.id ? "active-group" : undefined,
+    }));
+
+    set({ nodes });
+  },
+
+  getGroupAtPos: ({x, y}, exclude) => {
+    const nodes = get().nodes;
+    return getGroupAt(x, y, [exclude], nodes);
+  }
 });

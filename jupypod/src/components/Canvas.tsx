@@ -16,7 +16,7 @@ import ReactFlow, {
   Background,
   useReactFlow,
   ReactFlowProvider,
-  useNodesState
+  useNodesState,
 } from "reactflow";
 
 import RichNode from "./Rich.tsx";
@@ -25,7 +25,6 @@ import { GroupNode } from "./Group.tsx";
 import { CanvasContextMenu } from "./CanvasContextMenu.tsx";
 
 import Box from "@mui/material/Box";
-
 
 const fitViewOptions: FitViewOptions = {
   // padding: 0.2,
@@ -48,6 +47,10 @@ function Flow() {
   const addNode = useBoundStore((state) => state.addNode);
   const saveCanvas = useBoundStore((state) => state.saveCanvas);
   const onNodesChange = useBoundStore((state) => state.onNodesChange);
+  const getGroupAtPos = useBoundStore((state) => state.getGroupAtPos);
+  const setHighlightedNode = useBoundStore((state) => state.setHighlightedNode);
+  const removeHighlightedNode = useBoundStore((state) => state.removeHighlightedNode);
+  const updateView = useBoundStore((state) => state.updateView);
 
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [points, setPoints] = useState({ x: 0, y: 0 });
@@ -98,6 +101,19 @@ function Flow() {
         nodeTypes={nodeTypes}
         nodesDraggable={true}
         onPaneContextMenu={onPaneContextMenu}
+        onNodeDrag={(event, node) => {
+          const mousePos = project({ x: event.clientX, y: event.clientY });
+          const group = getGroupAtPos(mousePos, node.id);
+          if (group) {
+            setHighlightedNode(group.id);
+          } else {
+            removeHighlightedNode();
+          }
+        }}
+        onNodeDragStop={(event, node) => {
+          removeHighlightedNode();
+          updateView();
+        }}
       >
         <Background />
         <Controls />
@@ -112,7 +128,7 @@ function Flow() {
             saveCanvas();
           }}
           addGroup={() => {
-            addNode("GROUP", project({ x: client.x, y: client.y}), parentNode);
+            addNode("GROUP", project({ x: client.x, y: client.y }), parentNode);
           }}
         />
       )}
