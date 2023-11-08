@@ -16,7 +16,7 @@ import ReactFlow, {
   Background,
   useReactFlow,
   ReactFlowProvider,
-  useNodesState,
+  useOnSelectionChange,
 } from "reactflow";
 
 import RichNode from "./Rich.tsx";
@@ -56,6 +56,7 @@ function Flow() {
   const [points, setPoints] = useState({ x: 0, y: 0 });
   const [client, setClient] = useState({ x: 0, y: 0 });
   const [parentNode, setParentNode] = useState("ROOT");
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
 
   const onPaneContextMenu = (event) => {
     event.preventDefault();
@@ -85,10 +86,15 @@ function Flow() {
     [reactFlowInstance]
   );
 
-  // const onNodesChange: OnNodesChange = useCallback(
-  //   (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-  //   [setNodes]
-  // );
+  // useOnSelectionChange({
+  //   onChange: ({ nodes }) => {
+  //     if (nodes.length > 0) {
+  //       setSelectedNode(nodes[0]);
+  //     } else {
+  //       setSelectedNode(null);
+  //     }
+  //   }
+  // })
 
   return (
     <Box className="react-flow-container" ref={reactFlowWrapper}>
