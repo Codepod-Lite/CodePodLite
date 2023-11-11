@@ -51,6 +51,7 @@ function Flow() {
   const setHighlightedNode = useBoundStore((state) => state.setHighlightedNode);
   const removeHighlightedNode = useBoundStore((state) => state.removeHighlightedNode);
   const updateView = useBoundStore((state) => state.updateView);
+  const moveIntoScope = useBoundStore((state) => state.moveIntoScope);
 
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [points, setPoints] = useState({ x: 0, y: 0 });
@@ -86,15 +87,15 @@ function Flow() {
     [reactFlowInstance]
   );
 
-  // useOnSelectionChange({
-  //   onChange: ({ nodes }) => {
-  //     if (nodes.length > 0) {
-  //       setSelectedNode(nodes[0]);
-  //     } else {
-  //       setSelectedNode(null);
-  //     }
-  //   }
-  // })
+  useOnSelectionChange({
+    onChange: ({ nodes }) => {
+      if (nodes.length > 0) {
+        setSelectedNode(nodes[0]);
+      } else {
+        setSelectedNode(null);
+      }
+    }
+  })
 
   return (
     <Box className="react-flow-container" ref={reactFlowWrapper}>
@@ -109,7 +110,7 @@ function Flow() {
         onPaneContextMenu={onPaneContextMenu}
         onNodeDrag={(event, node) => {
           const mousePos = project({ x: event.clientX, y: event.clientY });
-          const group = getGroupAtPos(mousePos, node.id);
+          const group = getGroupAtPos(mousePos);
           if (group) {
             setHighlightedNode(group.id);
           } else {
@@ -117,6 +118,16 @@ function Flow() {
           }
         }}
         onNodeDragStop={(event, node) => {
+          const mousePos = project({ x: event.clientX, y: event.clientY });
+          const group = getGroupAtPos(mousePos);
+          const nodeIds = [selectedNode!.id];
+          if (group === undefined) {
+            if (selectedNode!.data.parent != group) {
+              moveIntoScope(nodeIds, "ROOT");
+            }
+          } else if (group && selectedNode!.data.parent != group.id) {
+            moveIntoScope(nodeIds, group.id);
+          }
           removeHighlightedNode();
           updateView();
         }}
