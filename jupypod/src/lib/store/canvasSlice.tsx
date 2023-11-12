@@ -198,7 +198,7 @@ export interface CanvasSlice {
 
   getGroupAtPos: ({ x, y }: XYPosition, exclude: string) => Node | undefined;
 
-  moveIntoScope: (nodeIds: string[], groupId: string, groupLevel: number) => void;
+  moveIntoScope: (nodeIds: string[], groupId: Node) => void;
 }
 
 export interface Notebook {
@@ -212,11 +212,12 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
   nodes: localStorage.getItem("Canvas") ? parseFromLocalStorage(JSON.parse(localStorage.getItem("Canvas")!)) : [],
   edges: [],
 
-  addNode: (type, position, parent = "ROOT") => {
+  addNode: (type, position, parentNode) => {
     const node = createNewNode(type, position);
     set((state: MyState) => ({
       nodes: [...state.nodes, node],
     }));
+    console.log(get().nodes);
   },
 
   onNodesChange: (changes: NodeChange[]) => {
@@ -286,21 +287,22 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
     return getGroupAt(x, y, [exclude], nodes);
   },
 
-  moveIntoScope: (nodeIds, groupId, groupLevel) => {
+  moveIntoScope: (nodeIds, group) => {
     const nodes = get().nodes;
 
     nodeIds.forEach((nodeId) => {
       const node = nodes.find((node: Node) => node.id === nodeId);
-      if (groupId === "ROOT") {
+      if (group === undefined) {
         node.parentNode = undefined;
         node.position = getAbsPos(node);
+        node.data.level = 0;
+        console.log(`Moving node ${node.id} into group "ROOT"`);
       } else {
-        node.parentNode = groupId;
-        const group = nodes.find((group: Node) => group.id === groupId);
+        node.parentNode = group.id;
         node.position = getNodePosInsideGroup(node, group);
+        node.data.level = group.data.level+1;
+        console.log(`Moving node ${node.id} into group ${group.id}`);
       }
-      node.data.level = groupLevel + 1;
-      console.log(`Moving node ${node.id} into group ${groupId}`);
     });
   },
 });
