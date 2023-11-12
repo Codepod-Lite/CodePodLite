@@ -179,8 +179,8 @@ export interface CanvasSlice {
 
   addNode: (
     type: "CODE" | "GROUP" | "RICH",
-    position: XYPosition
-    // parent: string
+    position: XYPosition,
+    parent: Node
   ) => void;
 
   onNodesChange: OnNodesChange;
@@ -214,10 +214,15 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
 
   addNode: (type, position, parentNode) => {
     const node = createNewNode(type, position);
+    if (parentNode) {
+      node.parentNode = parentNode.id;
+      node.position = getNodePosInsideGroup(node, parentNode);
+    } else {
+      node.parentNode = undefined;
+    }
     set((state: MyState) => ({
       nodes: [...state.nodes, node],
     }));
-    console.log(get().nodes);
   },
 
   onNodesChange: (changes: NodeChange[]) => {
