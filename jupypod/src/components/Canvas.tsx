@@ -94,8 +94,8 @@ function Flow() {
       } else {
         setSelectedNode(null);
       }
-    }
-  })
+    },
+  });
 
   return (
     <Box className="react-flow-container" ref={reactFlowWrapper}>
@@ -110,7 +110,7 @@ function Flow() {
         onPaneContextMenu={onPaneContextMenu}
         onNodeDrag={(event, node) => {
           const mousePos = project({ x: event.clientX, y: event.clientY });
-          const group = getGroupAtPos(mousePos);
+          const group = getGroupAtPos(mousePos, node.id);
           if (group) {
             setHighlightedNode(group.id);
           } else {
@@ -119,7 +119,7 @@ function Flow() {
         }}
         onNodeDragStop={(event, node) => {
           const mousePos = project({ x: event.clientX, y: event.clientY });
-          const group = getGroupAtPos(mousePos);
+          const group = getGroupAtPos(mousePos, node.id);
           const nodeIds = [selectedNode!.id];
           if (group === undefined) {
             if (selectedNode!.data.parent != "ROOT") {

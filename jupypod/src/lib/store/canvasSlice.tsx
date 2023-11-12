@@ -142,12 +142,7 @@ export function getAbsPos(node: Node) {
   return { x, y };
 }
 
-function getGroupAt(
-  x: number,
-  y: number,
-  excludes: string[],
-  nodes,
-): Node {
+function getGroupAt(x: number, y: number, excludes: string[], nodes): Node {
   const group = nodes.findLast((node: Node) => {
     const { x: x1, y: y1 } = getAbsPos(node);
     return (
@@ -185,7 +180,7 @@ export interface CanvasSlice {
 
   updateView: () => void;
 
-  getGroupAtPos: ({x, y}: XYPosition, exclude: string) => Node | undefined;
+  getGroupAtPos: ({ x, y }: XYPosition, exclude: string) => Node | undefined;
 
   moveIntoScope: (nodeIds: string[], groupId: string, groupLevel: number) => void;
 }
@@ -209,9 +204,8 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
   },
 
   onNodesChange: (changes: NodeChange[]) => {
-    const newNodes = applyNodeChanges(changes, get().nodes);
     set(() => ({
-      nodes: newNodes,
+      nodes: applyNodeChanges(changes, get().nodes),
     }));
     get().updateView();
   },
@@ -269,7 +263,7 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
     set({ nodes });
   },
 
-  getGroupAtPos: ({x, y}, exclude) => {
+  getGroupAtPos: ({ x, y }, exclude) => {
     const nodes = get().nodes;
     return getGroupAt(x, y, [exclude], nodes);
   },
@@ -280,8 +274,8 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
       const node = nodes.find((node: Node) => node.id === nodeId);
       node.data.parent = groupId;
       node.data.level = groupLevel + 1;
+      console.log(node.data.level);
       console.log(`Moving node ${node.id} into group ${groupId}`);
-    })
-  }
-
+    });
+  },
 });
