@@ -137,8 +137,15 @@ function parseFromLocalStorage(notebook: Notebook) {
 }
 
 export function getAbsPos(node: Node) {
-  const x = node.position.x;
-  const y = node.position.y;
+  let x;
+  let y;
+  if (node.positionAbsolute !== undefined) {
+    x = node.positionAbsolute.x;
+    y = node.positionAbsolute.y;
+  } else {
+    x = node.position.x;
+    y = node.position.y;
+  }
   return { x, y };
 }
 
@@ -155,6 +162,15 @@ function getGroupAt(x: number, y: number, excludes: string[], nodes): Node {
     );
   });
   return group;
+}
+
+function getNodePosInsideGroup(node: Node, group: Node): XYPosition {
+  // compute the actual position
+  let { x, y } = getAbsPos(node);
+  const { x: dx, y: dy } = getAbsPos(group);
+  x -= dx;
+  y -= dy;
+  return { x, y };
 }
 
 export interface CanvasSlice {
@@ -255,10 +271,12 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
   // may need to add group color based on data level
   updateView: () => {
     let nodes = get().nodes;
-    nodes = nodes.map((node: Node) => ({
-      ...node,
-      className: get().highlightedNode === node.id ? "active-group" : undefined,
-    }));
+    nodes = nodes
+      .sort((a: Node, b: Node) => a.data.level - b.data.level)
+      .map((node: Node) => ({
+        ...node,
+        className: get().highlightedNode === node.id ? "active-group" : undefined,
+      }));
 
     set({ nodes });
   },
@@ -270,11 +288,18 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
 
   moveIntoScope: (nodeIds, groupId, groupLevel) => {
     const nodes = get().nodes;
+
     nodeIds.forEach((nodeId) => {
       const node = nodes.find((node: Node) => node.id === nodeId);
-      node.data.parent = groupId;
+      if (groupId === "ROOT") {
+        node.parentNode = undefined;
+        node.position = getAbsPos(node);
+      } else {
+        node.parentNode = groupId;
+        const group = nodes.find((group: Node) => group.id === groupId);
+        node.position = getNodePosInsideGroup(node, group);
+      }
       node.data.level = groupLevel + 1;
-      console.log(node.data.level);
       console.log(`Moving node ${node.id} into group ${groupId}`);
     });
   },

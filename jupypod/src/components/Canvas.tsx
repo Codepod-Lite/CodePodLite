@@ -122,7 +122,8 @@ function Flow() {
           const group = getGroupAtPos(mousePos, node.id);
           const nodeIds = [selectedNode!.id];
           if (group === undefined) {
-            if (selectedNode!.data.parent != "ROOT") {
+            if (selectedNode!.parentNode !== undefined) {
+              console.log("Root case");
               moveIntoScope(nodeIds, "ROOT", -1);
             }
           } else if (group && selectedNode!.data.parent != group.id) {
