@@ -187,7 +187,7 @@ export interface CanvasSlice {
 
   getGroupAtPos: ({x, y}: XYPosition, exclude: string) => Node | undefined;
 
-  moveIntoScope: (nodeIds: string[], scopeId: string) => void;
+  moveIntoScope: (nodeIds: string[], groupId: string, groupLevel: number) => void;
 }
 
 export interface Notebook {
@@ -274,12 +274,12 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
     return getGroupAt(x, y, [exclude], nodes);
   },
 
-  moveIntoScope: (nodeIds, groupId) => {
+  moveIntoScope: (nodeIds, groupId, groupLevel) => {
     const nodes = get().nodes;
     nodeIds.forEach((nodeId) => {
-      console.log(nodeId);
       const node = nodes.find((node: Node) => node.id === nodeId);
       node.data.parent = groupId;
+      node.data.level = groupLevel + 1;
       console.log(`Moving node ${node.id} into group ${groupId}`);
     })
   }

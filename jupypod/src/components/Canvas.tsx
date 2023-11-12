@@ -122,11 +122,11 @@ function Flow() {
           const group = getGroupAtPos(mousePos);
           const nodeIds = [selectedNode!.id];
           if (group === undefined) {
-            if (selectedNode!.data.parent != group) {
-              moveIntoScope(nodeIds, "ROOT");
+            if (selectedNode!.data.parent != "ROOT") {
+              moveIntoScope(nodeIds, "ROOT", -1);
             }
           } else if (group && selectedNode!.data.parent != group.id) {
-            moveIntoScope(nodeIds, group.id);
+            moveIntoScope(nodeIds, group.id, group.data.level);
           }
           removeHighlightedNode();
           updateView();
