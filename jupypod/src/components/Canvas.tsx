@@ -53,6 +53,7 @@ function Flow() {
   const updateView = useBoundStore((state) => state.updateView);
   const moveIntoScope = useBoundStore((state) => state.moveIntoScope);
   const autoLayout = useBoundStore((state) => state.autoLayout);
+  // const autoLayoutAll = useBoundStore((state) => state.autoLayoutAll);
 
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [points, setPoints] = useState({ x: 0, y: 0 });

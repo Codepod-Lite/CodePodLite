@@ -24,6 +24,8 @@ import {
 import { parse } from "dotenv";
 import { UpdateSharp } from "@mui/icons-material";
 
+import { useStore } from "reactflow";
+
 export const newNodeShapeConfig = {
   width: 250,
   // NOTE for import ipynb: we need to specify some reasonable height so that
@@ -156,7 +158,7 @@ function getGroupAt(x: number, y: number, excludes: string[], nodes): Node {
     return (
       node.type === "GROUP" &&
       x >= x1 &&
-      !checkParentNodes(node, excludes, nodes) && 
+      !checkParentNodes(node, excludes, nodes) &&
       !excludes.includes(node.id) &&
       x <= x1 + node.width! &&
       y >= y1 &&
@@ -174,7 +176,11 @@ function checkParentNodes(node: Node, excludes: string[], nodes) {
   if (excludes.includes(node.parentNode)) {
     return true;
   }
-  return checkParentNodes(nodes.find((pod: Node) => pod.id === node.parentNode), excludes, nodes);
+  return checkParentNodes(
+    nodes.find((pod: Node) => pod.id === node.parentNode),
+    excludes,
+    nodes
+  );
 }
 
 function getNodePosInsideGroup(node: Node, group: Node): XYPosition {
@@ -210,6 +216,8 @@ export interface CanvasSlice {
   moveIntoScope: (nodeIds: string[], groupId: Node) => void;
 
   autoLayout: (group: Node) => void;
+
+  autoLayoutAll: () => void;
 }
 
 export interface Notebook {
@@ -295,6 +303,16 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
         className: get().highlightedNode === node.id ? "active-group" : undefined,
       }));
 
+    nodes.forEach((node: Node) => {
+      if (node.parentNode) {
+        const parentNode = nodes.find((potParent: Node) => potParent.id === node.parentNode);
+        node.data.level = parentNode.data.level + 1;
+        node.positionAbsolute = {
+          x: parentNode.positionAbsolute.x + node.position.x,
+          y: parentNode.positionAbsolute.y + node.position.y,
+        };
+      }
+    });
     set({ nodes });
   },
 
@@ -346,7 +364,7 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
     const paddingRight = 50;
 
     // adjust node width and height based on above
-    let parent;
+    let parent = undefined;
     if (group.parentNode) {
       parent = allNodes.find((node: Node) => node.id === group.parentNode);
     }
@@ -386,6 +404,17 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
       }
     });
     set({ nodes: updatedNodes });
-
+    if (group.parentNode) {
+      get().autoLayout(updatedNodes.find((node: Node) => node.id === group.parentNode));
+    }
   },
+
+  autoLayoutAll: () => {
+    const nodes = get().nodes;
+    nodes.forEach((node: Node) => {
+      if (node.type === "GROUP") {
+        get().autoLayout(node);
+      }
+    })
+  }
 });
