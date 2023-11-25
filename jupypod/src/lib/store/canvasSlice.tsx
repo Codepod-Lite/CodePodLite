@@ -22,6 +22,7 @@ import {
   ReactFlowInstance,
 } from "reactflow";
 import { parse } from "dotenv";
+import { UpdateSharp } from "@mui/icons-material";
 
 export const newNodeShapeConfig = {
   width: 250,
@@ -155,6 +156,7 @@ function getGroupAt(x: number, y: number, excludes: string[], nodes): Node {
     return (
       node.type === "GROUP" &&
       x >= x1 &&
+      !checkParentNodes(node, excludes, nodes) && 
       !excludes.includes(node.id) &&
       x <= x1 + node.width! &&
       y >= y1 &&
@@ -162,6 +164,17 @@ function getGroupAt(x: number, y: number, excludes: string[], nodes): Node {
     );
   });
   return group;
+}
+
+// function to make sure no group gets moved into its own child
+function checkParentNodes(node: Node, excludes: string[], nodes) {
+  if (node.parentNode === undefined || node.parentNode === "ROOT") {
+    return false;
+  }
+  if (excludes.includes(node.parentNode)) {
+    return true;
+  }
+  return checkParentNodes(nodes.find((pod: Node) => pod.id === node.parentNode), excludes, nodes);
 }
 
 function getNodePosInsideGroup(node: Node, group: Node): XYPosition {
@@ -177,11 +190,7 @@ export interface CanvasSlice {
   nodes: Node[];
   edges: Edge[];
 
-  addNode: (
-    type: "CODE" | "GROUP" | "RICH",
-    position: XYPosition,
-    parent: Node
-  ) => void;
+  addNode: (type: "CODE" | "GROUP" | "RICH", position: XYPosition, parent: Node) => void;
 
   onNodesChange: OnNodesChange;
 
@@ -199,6 +208,8 @@ export interface CanvasSlice {
   getGroupAtPos: ({ x, y }: XYPosition, exclude: string) => Node | undefined;
 
   moveIntoScope: (nodeIds: string[], groupId: Node) => void;
+
+  autoLayout: (group: Node) => void;
 }
 
 export interface Notebook {
@@ -293,6 +304,7 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
   },
 
   moveIntoScope: (nodeIds, group) => {
+    // update state
     const nodes = get().nodes;
 
     nodeIds.forEach((nodeId) => {
@@ -305,9 +317,75 @@ export const createCanvasSlice: StateCreator<MyState, [], [], CanvasSlice> = (se
       } else {
         node.parentNode = group.id;
         node.position = getNodePosInsideGroup(node, group);
-        node.data.level = group.data.level+1;
+        node.data.level = group.data.level + 1;
         console.log(`Moving node ${node.id} into group ${group.id}`);
       }
     });
+
+    set({ nodes });
+  },
+
+  autoLayout: (group: Node) => {
+    // get all children of the group
+    const allNodes = get().nodes;
+    const groupChildren = allNodes.filter((node: Node) => node.parentNode === group.id);
+
+    if (groupChildren.length === 0) {
+      return;
+    }
+    // get minX, maxX, minY, maxY
+    const minX = Math.min(...groupChildren.map((node: Node) => node.position.x));
+    const maxX = Math.max(...groupChildren.map((node: Node) => node.position.x + node.width!));
+    const minY = Math.min(...groupChildren.map((node: Node) => node.position.y));
+    const maxY = Math.max(...groupChildren.map((node: Node) => node.position.y + node.height!));
+
+    // set padding for the group
+    const paddingTop = 70;
+    const paddingBottom = 50;
+    const paddingLeft = 50;
+    const paddingRight = 50;
+
+    // adjust node width and height based on above
+    let parent;
+    if (group.parentNode) {
+      parent = allNodes.find((node: Node) => node.id === group.parentNode);
+    }
+    const xOffset = paddingLeft - minX;
+    const yOffset = paddingTop - minY;
+    const newGroup = {
+      ...group,
+      position: {
+        x: group.position.x + minX - paddingLeft,
+        y: group.position.y + minY - paddingTop,
+      },
+      positionAbsolute: parent
+        ? {
+            x: parent.positionAbsolute.x + group.position.x + minX - paddingLeft,
+            y: parent.positionAbsolute.y + group.position.y + minY - paddingTop,
+          }
+        : {
+            x: group.position.x + minX - paddingLeft,
+            y: group.position.y + minY - paddingTop,
+          },
+      width: maxX - minX + paddingLeft + paddingRight,
+      height: maxY - minY + paddingTop + paddingBottom,
+      style: {
+        ...group.style,
+        width: maxX - minX + paddingLeft + paddingRight,
+        height: maxY - minY + paddingTop + paddingBottom,
+      },
+    };
+
+    // when position of a parent node gets updated, the positions of all children get updated relative to the parent
+    let updatedNodes = allNodes.map((node: Node) => (node.id === group.id ? newGroup : node));
+    updatedNodes = updatedNodes.map((node: Node) => {
+      if (groupChildren.includes(node)) {
+        return { ...node, position: { x: node.position.x + xOffset, y: node.position.y + yOffset } };
+      } else {
+        return node;
+      }
+    });
+    set({ nodes: updatedNodes });
+
   },
 });

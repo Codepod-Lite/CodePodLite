@@ -52,6 +52,7 @@ function Flow() {
   const removeHighlightedNode = useBoundStore((state) => state.removeHighlightedNode);
   const updateView = useBoundStore((state) => state.updateView);
   const moveIntoScope = useBoundStore((state) => state.moveIntoScope);
+  const autoLayout = useBoundStore((state) => state.autoLayout);
 
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [points, setPoints] = useState({ x: 0, y: 0 });
@@ -72,7 +73,7 @@ function Flow() {
 
     event.preventDefault();
     setShowContextMenu(true);
-    setParentNode(node);    
+    setParentNode(node);
     setPoints({ x: event.pageX, y: event.pageY });
     setClient({ x: event.clientX, y: event.clientY });
   };
@@ -122,7 +123,7 @@ function Flow() {
         onNodeContextMenu={onNodeContextMenu}
         onNodeDrag={(event, node) => {
           const mousePos = project({ x: event.clientX, y: event.clientY });
-          const group = getGroupAtPos(mousePos, node.id);
+          const group = getGroupAtPos(mousePos, node.id, node);
           if (group) {
             setHighlightedNode(group.id);
           } else {
@@ -131,14 +132,11 @@ function Flow() {
         }}
         onNodeDragStop={(event, node) => {
           const mousePos = project({ x: event.clientX, y: event.clientY });
-          const group = getGroupAtPos(mousePos, node.id);
+          const group = getGroupAtPos(mousePos, node.id, node);
           const nodeIds = [selectedNode!.id];
-          if (group === undefined) {
-            if (selectedNode!.parentNode !== undefined) {
-              moveIntoScope(nodeIds, group);
-            }
-          } else if (group && selectedNode!.parentNode !== group.id) {
-            moveIntoScope(nodeIds, group);
+          moveIntoScope(nodeIds, group);
+          if (group) {
+            autoLayout(group);
           }
           removeHighlightedNode();
           updateView();

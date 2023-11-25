@@ -16,7 +16,7 @@ import InputBase from "@mui/material/InputBase";
 import Grid from "@mui/material/Grid";
 import Tooltip from "@mui/material/Tooltip";
 
-import { ConfirmDeleteButton } from "./utils.tsx";
+import { ConfirmDeleteButton, ResizeIcon } from "./utils.tsx";
 
 
 function MyFloatingToolbar({ id }: { id: string }) {
@@ -68,7 +68,7 @@ export const GroupNode = memo<NodeProps>(function GroupNode({
       }}
       className="custom-drag-handle"
     >
-      {/* <NodeResizer color="#ff0071" minWidth={100} minHeight={30} />
+      <NodeResizer color="#ff0071" minWidth={100} minHeight={30} />
       <Box sx={{ opacity: 1 }}>
         <NodeResizeControl
           style={{
@@ -80,7 +80,7 @@ export const GroupNode = memo<NodeProps>(function GroupNode({
         >
           <ResizeIcon />
         </NodeResizeControl>
-      </Box> */}
+      </Box>
 
       <Box
         sx={{
