@@ -280,7 +280,7 @@ const MyEditor = ({ placeholder = "Start typing...", id, data }: { placeholder?:
               top: 0,
               left: 0,
               width: "101%",
-              height: "132%",
+              height: "100%",
               zIndex: focusedEditor === id ? -1 : 10,
             }}
           >
@@ -376,7 +376,6 @@ export const RichNode = memo<Props>(function ({
     >
       <ResizableBox
         // onResizeStop={onResizeStop}
-        height={100}
         width={250}
         axis={"x"}
         minConstraints={[100, 200]}
